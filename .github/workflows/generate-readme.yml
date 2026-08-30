@@ -234,10 +234,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # -----------------------------------------------
-          # Crear rama de actualización desde la base
+          # Crear rama de actualización
           # -----------------------------------------------
 
-          git checkout -b "$UPDATE_BRANCH"
+          git checkout -B "$UPDATE_BRANCH"
 
           # -----------------------------------------------
           # Agregar README
@@ -252,7 +252,7 @@ jobs:
           git commit -m "docs: update README automatically"
 
           # -----------------------------------------------
-          # Push de la rama de actualización
+          # Push de la rama
           # -----------------------------------------------
 
           git push origin "$UPDATE_BRANCH" --force
@@ -273,7 +273,7 @@ jobs:
             --jq '.[0].number')
 
           # -----------------------------------------------
-          # Si ya existe PR
+          # Crear PR si no existe
           # -----------------------------------------------
 
           if [ -n "$PR_NUMBER" ]; then
@@ -288,52 +288,46 @@ jobs:
 
           else
 
-            # -------------------------------------------
-            # Crear nuevo PR
-            # -------------------------------------------
-
             echo ""
             echo "======================================"
             echo "CREANDO PULL REQUEST"
             echo "======================================"
 
-            gh pr create \
+            PR_URL=$(gh pr create \
               --repo "$GITHUB_REPOSITORY" \
               --base "$BASE_BRANCH" \
               --head "$UPDATE_BRANCH" \
               --title "docs: actualización automática del README" \
-              --body "$(cat <<'EOF'
-## README generado automáticamente
+              --body "## README generado automáticamente
 
 Este Pull Request fue generado automáticamente por el sistema AI README.
 
 ### Qué se hizo
 
 - Analizó la estructura actual del repositorio.
-- Generó una nueva versión de `README.md`.
+- Generó una nueva versión de README.md.
 - Comparó los cambios contra la versión existente.
 - Publicó los cambios en una rama independiente.
 - Abrió este Pull Request para revisión.
 
 ### Importante
 
-Este workflow **no modifica directamente la rama principal**.
+Este workflow no modifica directamente la rama principal.
 
 El cambio debe ser revisado y aprobado antes de realizar el merge.
 
 ### Archivo modificado
 
-- `README.md`
+- README.md
 
 ---
 
-🤖 Generado automáticamente por AI README
-EOF
-            )"
+🤖 Generado automáticamente por AI README")
 
             echo ""
             echo "======================================"
             echo "PULL REQUEST CREADO"
             echo "======================================"
+            echo "$PR_URL"
 
           fi
