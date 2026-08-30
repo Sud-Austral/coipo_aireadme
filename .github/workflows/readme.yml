@@ -1,0 +1,9 @@
+name: Maintain README
+
+'on':
+  workflow_dispatch:
+
+jobs:
+
+  readme:
+    uses: Sud-Austral/coipo_aireadme/.github/workflows/generate-readme.yml@main
