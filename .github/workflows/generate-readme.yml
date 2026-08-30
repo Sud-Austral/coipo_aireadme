@@ -1,9 +1,10 @@
 name: Generate README
 
-on:
-  workflow_dispatch:
+'on':
+  workflow_call:
 
 jobs:
+
   test:
     name: Test AI README
     runs-on: ubuntu-latest
@@ -12,6 +13,7 @@ jobs:
       contents: write
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -24,15 +26,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install requests
-
-      - name: Verify files
-        run: |
-          echo "Repository:"
-          pwd
-
-          echo ""
-          echo "Files:"
-          find . -maxdepth 3 -type f | sort
 
       - name: Verify Python
         run: |
@@ -49,6 +42,5 @@ jobs:
       - name: Success
         run: |
           echo "======================================"
-          echo "AI README repository is working"
+          echo "AI README reusable workflow OK"
           echo "======================================"
-
