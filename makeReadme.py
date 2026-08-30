@@ -1,36 +1,9 @@
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
 
 import requests
-
-
-# ============================================================
-# MAKE README - EVIDENCE FIRST
-#
-# Flujo:
-#
-#   readme3.py
-#       ↓
-#   README_EVIDENCE.json
-#   README_CONTEXT_ULTRA.md
-#       ↓
-#   Z.ai
-#       ↓
-#   README_CANDIDATE.md
-#       ↓
-#   validate_readme.py
-#       ↓
-#   PASS → README.md
-#   FAIL → Z.ai corrige → validación
-#
-# Principio:
-#
-#   El LLM redacta.
-#   La evidencia decide.
-# ============================================================
 
 
 # ============================================================
@@ -53,33 +26,44 @@ CANDIDATE_FILE_NAME = "README_CANDIDATE.md"
 
 MAX_REPAIR_ATTEMPTS = 2
 
+# Límites para evitar prompts gigantes.
+MAX_CONTEXT_CHARS = 30_000
+MAX_EXISTING_README_CHARS = 12_000
+MAX_AUDIT_CHARS = 12_000
+
 
 # ============================================================
 # UTILIDADES
 # ============================================================
 
 def error(message):
+
     print("")
     print(f"ERROR: {message}")
     print("")
+
     sys.exit(1)
 
 
 def run_command(command, cwd):
 
     try:
+
         result = subprocess.run(
             command,
             cwd=cwd,
             text=True,
         )
+
     except Exception as exc:
+
         error(
             "No fue posible ejecutar el comando.\n"
             f"{exc}"
         )
 
     if result.returncode != 0:
+
         error(
             "El comando terminó con errores:\n"
             + " ".join(command)
@@ -87,55 +71,32 @@ def run_command(command, cwd):
 
 
 # ============================================================
-# LEER API
+# API.JSON
 # ============================================================
 
 def load_api():
 
-    # --------------------------------------------------------
-    # Primero intentar variables de entorno.
-    # --------------------------------------------------------
-
-    api_key = os.getenv(
-        "ZAI_API_KEY"
-    )
-
-    model = os.getenv(
-        "ZAI_MODEL"
-    )
-
-    if api_key:
-
-        if not model:
-            model = "glm-4.5"
-
-        return api_key, model
-
-    # --------------------------------------------------------
-    # Compatibilidad con api.json
-    # --------------------------------------------------------
-
     if not API_FILE.exists():
 
         error(
-            "No se encontró ZAI_API_KEY "
-            "ni api.json.\n\n"
-            f"Esperado:\n{API_FILE}"
+            "No se encontró api.json:\n"
+            f"{API_FILE}"
         )
 
     try:
 
         with API_FILE.open(
             "r",
-            encoding="utf-8"
-        ) as f:
+            encoding="utf-8",
+        ) as file:
 
-            config = json.load(f)
+            config = json.load(file)
 
     except Exception as exc:
 
         error(
-            f"No se pudo leer api.json:\n{exc}"
+            "No se pudo leer api.json:\n"
+            f"{exc}"
         )
 
     api_key = config.get(
@@ -149,22 +110,20 @@ def load_api():
     if not api_key:
 
         error(
-            "api.json no contiene "
-            "'apikey'."
+            "api.json no contiene 'apikey'."
         )
 
     if not model:
 
         error(
-            "api.json no contiene "
-            "'model'."
+            "api.json no contiene 'model'."
         )
 
     return api_key, model
 
 
 # ============================================================
-# EJECUTAR README3
+# README3
 # ============================================================
 
 def run_readme3(repo):
@@ -179,7 +138,7 @@ def run_readme3(repo):
     print("")
     print("=" * 70)
     print(
-        " PASO 1/4 - EXTRAyENDO EVIDENCIA"
+        " PASO 1/4 - ANALIZANDO REPOSITORIO"
     )
     print("=" * 70)
     print("")
@@ -197,7 +156,7 @@ def run_readme3(repo):
 
 
 # ============================================================
-# OBTENER ARCHIVOS DE CONTEXTO
+# CONTEXTO
 # ============================================================
 
 def get_context_files(repo):
@@ -220,16 +179,14 @@ def get_context_files(repo):
     if not compact.exists():
 
         error(
-            "readme3.py terminó, pero "
-            "no existe:\n"
+            "readme3.py terminó, pero no existe:\n"
             f"{compact}"
         )
 
     if not evidence.exists():
 
         error(
-            "readme3.py terminó, pero "
-            "no existe:\n"
+            "readme3.py terminó, pero no existe:\n"
             f"{evidence}"
         )
 
@@ -242,14 +199,14 @@ def get_context_files(repo):
 
 def get_existing_readme(repo):
 
-    readme = repo / "README.md"
+    readme_file = repo / "README.md"
 
-    if not readme.exists():
+    if not readme_file.exists():
         return ""
 
     try:
 
-        return readme.read_text(
+        text = readme_file.read_text(
             encoding="utf-8",
             errors="ignore",
         )
@@ -258,132 +215,131 @@ def get_existing_readme(repo):
 
         return ""
 
+    # No necesitamos enviar README gigantesco.
+    if len(text) > MAX_EXISTING_README_CHARS:
+
+        return (
+            text[
+                :MAX_EXISTING_README_CHARS
+            ]
+            + "\n\n"
+            "[README EXISTENTE TRUNCADO]\n"
+        )
+
+    return text
+
 
 # ============================================================
-# PROMPT PRINCIPAL
+# TRUNCAR CONTEXTO DE SEGURIDAD
+# ============================================================
+
+def limit_context(context):
+
+    if len(context) <= MAX_CONTEXT_CHARS:
+        return context
+
+    return (
+        context[:MAX_CONTEXT_CHARS]
+        + "\n\n"
+        "[CONTEXTO TRUNCADO POR LÍMITE DE PROMPT]\n"
+    )
+
+
+# ============================================================
+# PROMPT DE GENERACIÓN
 # ============================================================
 
 def create_generation_prompt(
-    repo,
     context,
-    evidence_json,
     existing_readme,
 ):
 
+    context = limit_context(
+        context
+    )
+
     return f"""
 Eres un ingeniero de software senior especializado
-en documentación técnica profesional de repositorios
-reales.
+en documentación técnica profesional.
 
-Tu tarea es generar el README.md definitivo del proyecto.
-
-============================================================
-FUENTE DE VERDAD
-============================================================
-
-README_EVIDENCE.json es la fuente primaria de evidencia.
-
-README_CONTEXT_ULTRA.md es un resumen auxiliar.
-
-El README existente puede utilizarse como referencia
-histórica, pero NO debe prevalecer sobre la evidencia
-actual del repositorio.
+Debes generar el README.md del repositorio analizado.
 
 ============================================================
-REGLA FUNDAMENTAL
+REGLA PRINCIPAL
 ============================================================
 
-SOLO escribas afirmaciones que puedan sustentarse
-directamente con la evidencia disponible.
+La información del contexto proviene del código del
+repositorio.
 
-NO INVENTES.
+SOLO documenta información respaldada por evidencia.
 
-No inventes:
+NO INVENTES:
 
 - funcionalidades
 - tecnologías
 - frameworks
-- librerías
 - endpoints
-- métodos HTTP
 - tablas
-- modelos
 - variables de entorno
 - comandos
-- scripts
-- roles
-- arquitectura
+- configuraciones
 - servicios
 - infraestructura
-- proveedores cloud
-- configuraciones
-- credenciales
-- flujos de negocio
-
-No conviertas señales débiles en hechos.
+- roles
+- arquitectura
+- proveedores
+- capacidades de negocio
 
 No conviertas nombres de archivos en funcionalidades.
 
 No conviertas nombres de carpetas en funcionalidades.
 
-No conviertas una dependencia instalada en una capacidad
-de producción.
+No conviertas una dependencia en una funcionalidad.
 
-No conviertas una palabra encontrada en el código en una
-característica del producto.
+No conviertas una palabra clave en una funcionalidad.
 
-============================================================
-NIVELES DE EVIDENCIA
-============================================================
+Cuando no exista evidencia suficiente:
 
-EVIDENCIA ALTA:
-
-- dependencia declarada
-- endpoint explícito
-- variable de entorno explícita
-- tabla SQL explícita
-- script package.json explícito
-- configuración explícita
-- archivo Docker explícito
-- código funcional claramente identificable
-
-EVIDENCIA MEDIA:
-
-- múltiples archivos relacionados
-- componentes y servicios coherentes
-- referencias cruzadas suficientes
-
-EVIDENCIA BAJA:
-
-- nombres de carpetas
-- nombres de funciones
-- palabras clave aisladas
-- archivos cuyo contenido no demuestra funcionalidad
-
-No presentes evidencia baja como funcionalidad confirmada.
+OMITE LA INFORMACIÓN.
 
 ============================================================
-OBJETIVO DEL README
+API
 ============================================================
 
-El README debe permitir que un desarrollador entienda:
+Documenta solamente endpoints explícitamente detectados
+en el contexto.
 
-- qué es el proyecto
-- para qué sirve
-- cómo está organizado
-- qué tecnologías utiliza realmente
-- cómo instalarlo
-- cómo configurarlo
-- cómo ejecutarlo
-- qué API existe realmente
-- qué persistencia existe realmente
-- cómo se relacionan sus componentes
-
-Solo cuando exista evidencia suficiente.
+No inventes endpoints.
 
 ============================================================
-ESTRUCTURA RECOMENDADA
+BASE DE DATOS
 ============================================================
+
+Documenta solamente tablas explícitamente detectadas.
+
+No inventes relaciones, índices o modelos.
+
+============================================================
+VARIABLES DE ENTORNO
+============================================================
+
+Documenta solamente variables explícitamente detectadas.
+
+Nunca inventes valores.
+
+Nunca escribas secretos.
+
+============================================================
+COMANDOS
+============================================================
+
+Documenta solamente comandos respaldados por evidencia.
+
+============================================================
+ESTRUCTURA
+============================================================
+
+Usa las secciones que tengan evidencia suficiente:
 
 # Nombre del proyecto
 
@@ -419,104 +375,31 @@ ESTRUCTURA RECOMENDADA
 
 ## Limitaciones conocidas
 
-NO es obligatorio utilizar todas las secciones.
+No es obligatorio incluir todas.
 
-Omitir una sección es preferible a inventarla.
-
-============================================================
-REGLAS DE API
-============================================================
-
-Solo documenta endpoints encontrados explícitamente
-en la evidencia.
-
-No deduzcas:
-
-- endpoints por nombres de funciones
-- endpoints por frontend
-- endpoints por modelos
-- endpoints por nombres de archivos
-
-Distingue:
-
-backend routes
-de
-frontend API calls.
+Es mejor omitir una sección que inventarla.
 
 ============================================================
-REGLAS DE BASE DE DATOS
-============================================================
-
-Solo documenta tablas cuando exista evidencia suficiente.
-
-No inventes:
-
-- relaciones
-- claves
-- índices
-- motores
-- migraciones
-- esquemas
-
-si no aparecen en la evidencia.
-
-============================================================
-REGLAS DE CONFIGURACIÓN
-============================================================
-
-Documenta únicamente las variables de entorno realmente
-detectadas.
-
-No inventes valores.
-
-No expongas secretos.
-
-No muestres claves API reales.
-
-============================================================
-REGLAS DE INSTALACIÓN Y EJECUCIÓN
-============================================================
-
-Solo escribe comandos respaldados por:
-
-- package.json
-- requirements.txt
-- pyproject.toml
-- Dockerfile
-- docker-compose
-- scripts existentes
-- documentación existente coherente
-
-No generes comandos genéricos por conocimiento externo.
-
-============================================================
-CALIDAD
+ESTILO
 ============================================================
 
 El README debe ser:
 
-- técnico
-- preciso
 - profesional
-- claro
-- estructurado
-- útil para mantenimiento
+- técnico
+- concreto
 - específico del repositorio
+- útil para desarrolladores
 
-Evita texto promocional.
-
-Evita frases genéricas que podrían aplicarse
-a cualquier proyecto.
-
-No describas el proceso de generación.
+Evita lenguaje promocional.
 
 No menciones IA.
 
 No menciones este prompt.
 
-No menciones README_EVIDENCE.
-
 No menciones README_CONTEXT.
+
+No expliques el proceso de generación.
 
 ============================================================
 README EXISTENTE
@@ -525,141 +408,38 @@ README EXISTENTE
 {existing_readme}
 
 ============================================================
-CONTEXTO
+CONTEXTO TÉCNICO
 ============================================================
 
 {context}
 
 ============================================================
-EVIDENCIA ESTRUCTURADA
-============================================================
-
-{evidence_json}
-
-============================================================
 SALIDA
 ============================================================
 
-Devuelve exclusivamente el contenido final de README.md.
+Devuelve únicamente el README.md.
 
-No lo envuelvas en ```markdown.
+No uses ```markdown alrededor de todo el documento.
 
-No agregues explicaciones antes o después.
+No escribas explicaciones antes o después.
 """.strip()
 
 
 # ============================================================
-# PROMPT DE REPARACIÓN
-# ============================================================
-
-def create_repair_prompt(
-    candidate,
-    audit,
-    context,
-    evidence_json,
-):
-
-    return f"""
-Eres un auditor técnico senior.
-
-Debes corregir el README mostrado abajo.
-
-Tu objetivo NO es hacerlo más completo.
-
-Tu objetivo es hacerlo MÁS VERAZ.
-
-============================================================
-AUDITORÍA
-============================================================
-
-{audit}
-
-============================================================
-REGLAS
-============================================================
-
-Elimina cualquier afirmación que no pueda demostrar:
-
-- una funcionalidad
-- una tecnología
-- un endpoint
-- una tabla
-- una variable
-- un comando
-- una configuración
-- una arquitectura
-- un servicio
-- una capacidad de negocio
-
-No sustituyas una afirmación inventada
-por otra afirmación inventada.
-
-No agregues contenido nuevo salvo que esté
-claramente respaldado por la evidencia.
-
-No escribas explicaciones meta.
-
-No menciones la auditoría.
-
-No menciones IA.
-
-No menciones README_EVIDENCE.
-
-No menciones README_CONTEXT.
-
-No uses frases como:
-
-"probablemente"
-"parece"
-"podría"
-"se espera"
-"posiblemente"
-
-Si algo no puede verificarse:
-
-ELIMÍNALO.
-
-============================================================
-README
-============================================================
-
-{candidate}
-
-============================================================
-CONTEXTO
-============================================================
-
-{context}
-
-============================================================
-EVIDENCIA
-============================================================
-
-{evidence_json}
-
-============================================================
-SALIDA
-============================================================
-
-Devuelve exclusivamente el README corregido.
-""".strip()
-
-
-# ============================================================
-# LLAMAR A Z.AI
+# Z.AI
 # ============================================================
 
 def call_zai(
     api_key,
     model,
     prompt,
-    label="GENERANDO README",
+    title,
 ):
 
     print("")
     print("=" * 70)
     print(
-        f" {label}"
+        f" {title}"
     )
     print("=" * 70)
     print("")
@@ -689,7 +469,7 @@ def call_zai(
                 "role": "system",
                 "content": (
                     "Eres un ingeniero de software "
-                    "senior experto en documentación "
+                    "senior especializado en documentación "
                     "técnica verificable."
                 ),
             },
@@ -741,12 +521,12 @@ def call_zai(
     except Exception:
 
         error(
-            "Z.ai no devolvió una respuesta JSON válida."
+            "Z.ai no devolvió JSON válido."
         )
 
     try:
 
-        content = (
+        return (
             data["choices"][0]
             ["message"]["content"]
         )
@@ -758,8 +538,7 @@ def call_zai(
     ):
 
         error(
-            "No se pudo obtener el contenido "
-            "de la respuesta de Z.ai.\n\n"
+            "Respuesta inválida de Z.ai:\n"
             + json.dumps(
                 data,
                 indent=2,
@@ -767,11 +546,9 @@ def call_zai(
             )
         )
 
-    return content
-
 
 # ============================================================
-# LIMPIAR RESPUESTA
+# LIMPIAR
 # ============================================================
 
 def clean_response(content):
@@ -786,7 +563,9 @@ def clean_response(content):
 
     for wrapper in wrappers:
 
-        if content.startswith(wrapper):
+        if content.startswith(
+            wrapper
+        ):
 
             content = (
                 content[
@@ -795,7 +574,9 @@ def clean_response(content):
                 .strip()
             )
 
-            if content.endswith("```"):
+            if content.endswith(
+                "```"
+            ):
 
                 content = (
                     content[:-3]
@@ -831,7 +612,8 @@ def save_candidate(
     except Exception as exc:
 
         error(
-            "No se pudo guardar README_CANDIDATE.md:\n"
+            "No se pudo guardar "
+            "README_CANDIDATE.md:\n"
             f"{exc}"
         )
 
@@ -839,7 +621,7 @@ def save_candidate(
 
 
 # ============================================================
-# EJECUTAR VALIDADOR
+# VALIDAR README
 # ============================================================
 
 def validate_readme(
@@ -851,19 +633,17 @@ def validate_readme(
     if not VALIDATOR_FILE.exists():
 
         error(
-            f"No se encontró validate_readme.py:\n"
+            "No se encontró validate_readme.py:\n"
             f"{VALIDATOR_FILE}"
         )
 
-    command = [
-        sys.executable,
-        str(VALIDATOR_FILE),
-        str(candidate),
-        str(evidence),
-    ]
-
     process = subprocess.run(
-        command,
+        [
+            sys.executable,
+            str(VALIDATOR_FILE),
+            str(candidate),
+            str(evidence),
+        ],
         cwd=BASE_DIR,
         text=True,
         capture_output=True,
@@ -882,7 +662,96 @@ def validate_readme(
 
 
 # ============================================================
-# GUARDAR README FINAL
+# PROMPT DE REPARACIÓN
+# ============================================================
+
+def create_repair_prompt(
+    candidate,
+    audit,
+    context,
+):
+
+    if len(audit) > MAX_AUDIT_CHARS:
+
+        audit = (
+            audit[:MAX_AUDIT_CHARS]
+            + "\n\n[AUDITORÍA TRUNCADA]"
+        )
+
+    context = limit_context(
+        context
+    )
+
+    return f"""
+Eres un auditor técnico senior.
+
+Debes corregir el README mostrado abajo.
+
+NO debes hacerlo más completo.
+
+Debes hacerlo más VERIFICABLE.
+
+============================================================
+ERRORES DETECTADOS
+============================================================
+
+{audit}
+
+============================================================
+REGLAS
+============================================================
+
+Elimina cualquier afirmación que no pueda demostrarse
+con el contexto proporcionado.
+
+No inventes reemplazos.
+
+No agregues funcionalidades.
+
+No agregues tecnologías.
+
+No agregues endpoints.
+
+No agregues tablas.
+
+No agregues variables.
+
+No agregues comandos.
+
+No agregues arquitectura.
+
+No agregues infraestructura.
+
+No menciones este proceso.
+
+No menciones IA.
+
+Si una afirmación no puede verificarse:
+
+ELIMÍNALA.
+
+============================================================
+README ACTUAL
+============================================================
+
+{candidate}
+
+============================================================
+CONTEXTO
+============================================================
+
+{context}
+
+============================================================
+SALIDA
+============================================================
+
+Devuelve exclusivamente el README corregido.
+""".strip()
+
+
+# ============================================================
+# README FINAL
 # ============================================================
 
 def save_final(
@@ -918,10 +787,6 @@ def save_final(
 
 def main():
 
-    # --------------------------------------------------------
-    # ARGUMENTOS
-    # --------------------------------------------------------
-
     if len(sys.argv) != 2:
 
         print("")
@@ -953,10 +818,6 @@ def main():
             f"{repo}"
         )
 
-    # --------------------------------------------------------
-    # HEADER
-    # --------------------------------------------------------
-
     print("")
     print("=" * 70)
     print(
@@ -976,7 +837,7 @@ def main():
     api_key, model = load_api()
 
     # --------------------------------------------------------
-    # STEP 1
+    # PASO 1
     # --------------------------------------------------------
 
     run_readme3(
@@ -989,56 +850,22 @@ def main():
         )
     )
 
-    print("")
-    print(
-        "Contexto:"
-    )
-    print(
-        f"  {compact_file}"
-    )
-
-    print(
-        "Evidencia:"
-    )
-    print(
-        f"  {evidence_file}"
-    )
-
-    # --------------------------------------------------------
-    # LEER CONTEXTO
-    # --------------------------------------------------------
-
     try:
 
         context = compact_file.read_text(
             encoding="utf-8"
         )
 
-        evidence_json = evidence_file.read_text(
-            encoding="utf-8"
-        )
-
     except Exception as exc:
 
         error(
-            "No se pudo leer el contexto de README3:\n"
+            "No se pudo leer README_CONTEXT_ULTRA.md:\n"
             f"{exc}"
         )
 
-    # Validar que JSON sea realmente JSON.
-
-    try:
-
-        json.loads(
-            evidence_json
-        )
-
-    except Exception as exc:
-
-        error(
-            "README_EVIDENCE.json no es válido:\n"
-            f"{exc}"
-        )
+    # --------------------------------------------------------
+    # PASO 2
+    # --------------------------------------------------------
 
     existing_readme = (
         get_existing_readme(
@@ -1046,24 +873,27 @@ def main():
         )
     )
 
-    # --------------------------------------------------------
-    # STEP 2
-    # --------------------------------------------------------
-
     prompt = create_generation_prompt(
-        repo,
-        context,
-        evidence_json,
-        existing_readme,
+        context=context,
+        existing_readme=existing_readme,
+    )
+
+    print("")
+    print(
+        f"Contexto utilizado: "
+        f"{len(context):,} caracteres"
+    )
+
+    print(
+        f"README previo: "
+        f"{len(existing_readme):,} caracteres"
     )
 
     readme = call_zai(
         api_key,
         model,
         prompt,
-        label=(
-            "PASO 2/4 - GENERANDO README CON Z.AI"
-        ),
+        "PASO 2/4 - GENERANDO README CON Z.AI",
     )
 
     readme = clean_response(
@@ -1075,13 +905,8 @@ def main():
         readme,
     )
 
-    print("")
-    print(
-        f"README candidato:\n{candidate}"
-    )
-
     # --------------------------------------------------------
-    # STEP 3 - VALIDACIÓN
+    # PASO 3
     # --------------------------------------------------------
 
     print("")
@@ -1101,7 +926,7 @@ def main():
     print(audit)
 
     # --------------------------------------------------------
-    # STEP 4 - REPARACIÓN
+    # PASO 4
     # --------------------------------------------------------
 
     attempt = 0
@@ -1116,8 +941,8 @@ def main():
         print("")
         print("=" * 70)
         print(
-            f" PASO 4/4 - REPARACIÓN "
-            f"{attempt}/{MAX_REPAIR_ATTEMPTS}"
+            f" REPARACIÓN {attempt}/"
+            f"{MAX_REPAIR_ATTEMPTS}"
         )
         print("=" * 70)
         print("")
@@ -1126,17 +951,14 @@ def main():
             candidate=readme,
             audit=audit,
             context=context,
-            evidence_json=evidence_json,
         )
 
         readme = call_zai(
             api_key,
             model,
             repair_prompt,
-            label=(
-                f"REPARANDO README "
-                f"(INTENTO {attempt})"
-            ),
+            f"REPARANDO README "
+            f"(INTENTO {attempt})",
         )
 
         readme = clean_response(
@@ -1158,7 +980,7 @@ def main():
         print(audit)
 
     # --------------------------------------------------------
-    # RESULTADO FINAL
+    # RESULTADO
     # --------------------------------------------------------
 
     if return_code != 0:
@@ -1172,16 +994,15 @@ def main():
         print("")
 
         print(
-            "El README no superó la validación."
+            "README.md existente NO fue sobrescrito."
         )
 
         print(
-            f"Puedes revisar:\n{candidate}"
+            f"README candidato:\n{candidate}"
         )
 
         error(
-            "README.md NO fue sobrescrito porque "
-            "la validación falló."
+            "La validación no fue superada."
         )
 
     final = save_final(
@@ -1192,7 +1013,7 @@ def main():
     print("")
     print("=" * 70)
     print(
-        " README FINAL GENERADO"
+        " README FINAL"
     )
     print("=" * 70)
     print("")
