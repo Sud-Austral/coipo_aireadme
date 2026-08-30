@@ -111,7 +111,7 @@ def get_compact(repo):
     compact = (
         repo
         / "readme_context"
-        / "README_CONTEXT_COMPACT.md"
+        / "README_CONTEXT_ULTRA.md"
     )
 
     if not compact.exists():
