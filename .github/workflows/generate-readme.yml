@@ -198,136 +198,77 @@ jobs:
       # --------------------------------------------------
 
       - name: Create README Pull Request
-        env:
-          GH_TOKEN: ${{ github.token }}
+        id: create-pr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ github.token }}
+          path: target
+
+          branch: ai-readme/update-readme
+          delete-branch: true
+
+          commit-message: "docs: update README automatically"
+
+          title: "docs: actualización automática del README"
+
+          body: |
+            ## README generado automáticamente
+
+            Este Pull Request fue generado automáticamente por el sistema AI README.
+
+            ### Qué se hizo
+
+            - Analizó la estructura actual del repositorio.
+            - Generó una nueva versión de `README.md`.
+            - Comparó los cambios contra la versión existente.
+            - Publicó los cambios en una rama independiente.
+            - Abrió este Pull Request para revisión.
+
+            ### Importante
+
+            Este workflow **no modifica directamente la rama principal**.
+
+            El cambio debe ser revisado y aprobado antes de realizar el merge.
+
+            ### Archivo modificado
+
+            - `README.md`
+
+            ---
+
+            🤖 Generado automáticamente por AI README
+
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+      # --------------------------------------------------
+      # 15. Mostrar resultado del Pull Request
+      # --------------------------------------------------
+
+      - name: Show Pull Request result
         run: |
-          cd target
-
           echo "======================================"
-          echo "PREPARANDO PULL REQUEST"
+          echo "RESULTADO PULL REQUEST"
           echo "======================================"
 
-          # -----------------------------------------------
-          # Verificar si README cambió
-          # -----------------------------------------------
-
-          if git diff --quiet -- README.md; then
-            echo "README.md no tiene cambios."
-            exit 0
-          fi
-
-          # -----------------------------------------------
-          # Obtener rama base
-          # -----------------------------------------------
-
-          BASE_BRANCH="${GITHUB_REF_NAME}"
-          UPDATE_BRANCH="ai-readme/update-readme"
-
-          echo "Rama base: $BASE_BRANCH"
-          echo "Rama actualización: $UPDATE_BRANCH"
-
-          # -----------------------------------------------
-          # Configurar Git
-          # -----------------------------------------------
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # -----------------------------------------------
-          # Crear rama de actualización
-          # -----------------------------------------------
-
-          git checkout -B "$UPDATE_BRANCH"
-
-          # -----------------------------------------------
-          # Agregar README
-          # -----------------------------------------------
-
-          git add README.md
-
-          # -----------------------------------------------
-          # Crear commit
-          # -----------------------------------------------
-
-          git commit -m "docs: update README automatically"
-
-          # -----------------------------------------------
-          # Push de la rama
-          # -----------------------------------------------
-
-          git push origin "$UPDATE_BRANCH" --force
+          echo "Operación:"
+          echo "${{ steps.create-pr.outputs.pull-request-operation }}"
 
           echo ""
-          echo "Rama de actualización enviada correctamente."
 
-          # -----------------------------------------------
-          # Buscar PR existente
-          # -----------------------------------------------
+          echo "Número:"
+          echo "${{ steps.create-pr.outputs.pull-request-number }}"
 
-          PR_NUMBER=$(gh pr list \
-            --repo "$GITHUB_REPOSITORY" \
-            --head "$UPDATE_BRANCH" \
-            --base "$BASE_BRANCH" \
-            --state open \
-            --json number \
-            --jq '.[0].number')
+          echo ""
 
-          # -----------------------------------------------
-          # Crear PR si no existe
-          # -----------------------------------------------
+          echo "URL:"
+          echo "${{ steps.create-pr.outputs.pull-request-url }}"
 
-          if [ -n "$PR_NUMBER" ]; then
+          echo ""
 
-            echo ""
-            echo "======================================"
-            echo "PR YA EXISTENTE"
-            echo "======================================"
+          echo "Rama:"
+          echo "${{ steps.create-pr.outputs.pull-request-branch }}"
 
-            echo "Pull Request #$PR_NUMBER ya existe."
-            echo "La rama fue actualizada."
+          echo "======================================"
 
-          else
-
-            echo ""
-            echo "======================================"
-            echo "CREANDO PULL REQUEST"
-            echo "======================================"
-
-            PR_URL=$(gh pr create \
-              --repo "$GITHUB_REPOSITORY" \
-              --base "$BASE_BRANCH" \
-              --head "$UPDATE_BRANCH" \
-              --title "docs: actualización automática del README" \
-              --body "## README generado automáticamente
-
-Este Pull Request fue generado automáticamente por el sistema AI README.
-
-### Qué se hizo
-
-- Analizó la estructura actual del repositorio.
-- Generó una nueva versión de README.md.
-- Comparó los cambios contra la versión existente.
-- Publicó los cambios en una rama independiente.
-- Abrió este Pull Request para revisión.
-
-### Importante
-
-Este workflow no modifica directamente la rama principal.
-
-El cambio debe ser revisado y aprobado antes de realizar el merge.
-
-### Archivo modificado
-
-- README.md
-
----
-
-🤖 Generado automáticamente por AI README")
-
-            echo ""
-            echo "======================================"
-            echo "PULL REQUEST CREADO"
-            echo "======================================"
-            echo "$PR_URL"
-
-          fi
