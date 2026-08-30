@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ast
 import json
 import os
@@ -9,24 +11,40 @@ from pathlib import Path
 
 
 # ============================================================
-# README3 - HIGH QUALITY COMPACT CONTEXT
+# README3 - EVIDENCE-FIRST REPOSITORY ANALYZER
 #
 # Objetivo:
-#   Analizar un repositorio SIN LLM y generar un contexto
-#   compacto pero rico en evidencia para que otro LLM
-#   genere un README.md de alta calidad.
+#   Analizar un repositorio SIN LLM y generar:
 #
-# Diseño:
-#   - Prioriza información arquitectónica útil.
-#   - Elimina ruido.
-#   - No incluye código fuente completo.
-#   - No inventa funcionalidades.
-#   - Objetivo aproximado: 2.500-3.500 tokens.
+#   1. README_CONTEXT_ULTRA.md
+#      Contexto compacto para generación.
+#
+#   2. README_EVIDENCE.json
+#      Evidencia estructurada y trazable.
+#
+# Principio:
+#
+#   El analizador NO decide qué significa el software.
+#   El analizador recopila evidencia.
+#
+#   El LLM posteriormente redacta.
+#
+# Regla:
+#
+#   DETECCIÓN != CONCLUSIÓN
 # ============================================================
 
 
+# ============================================================
+# CONFIGURACIÓN
+# ============================================================
+
 IGNORED_DIRS = {
-    ".git", ".svn", ".hg",
+    ".git",
+    ".svn",
+    ".hg",
+    ".idea",
+    ".vscode",
     "node_modules",
     "__pycache__",
     ".pytest_cache",
@@ -42,8 +60,6 @@ IGNORED_DIRS = {
     ".nuxt",
     ".cache",
     "vendor",
-    ".idea",
-    ".vscode",
     "site-packages",
 }
 
@@ -53,43 +69,99 @@ IGNORED_FILES = {
 }
 
 TEXT_EXTENSIONS = {
-    ".py", ".js", ".jsx", ".ts", ".tsx",
-    ".java", ".c", ".cpp", ".h", ".hpp",
-    ".cs", ".go", ".rs", ".php", ".rb",
-    ".swift", ".kt", ".kts",
-    ".html", ".htm",
-    ".css", ".scss", ".sass", ".less",
+    ".py",
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx",
+    ".java",
+    ".c",
+    ".cpp",
+    ".h",
+    ".hpp",
+    ".cs",
+    ".go",
+    ".rs",
+    ".php",
+    ".rb",
+    ".swift",
+    ".kt",
+    ".kts",
+    ".html",
+    ".htm",
+    ".css",
+    ".scss",
+    ".sass",
+    ".less",
     ".sql",
-    ".json", ".yaml", ".yml", ".toml",
-    ".ini", ".cfg",
-    ".md", ".txt",
-    ".sh", ".bat", ".ps1",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".ini",
+    ".cfg",
+    ".md",
+    ".txt",
+    ".sh",
+    ".bat",
+    ".ps1",
 }
 
 MAX_FILE_SIZE = 5 * 1024 * 1024
+
+MAX_CONTEXT_FILES = 500
+
+MAX_API_ITEMS = 150
+
+MAX_ENV_ITEMS = 100
+
+MAX_TABLE_ITEMS = 150
+
+
+# ============================================================
+# ARCHIVOS IMPORTANTES
+# ============================================================
+
+IMPORTANT_FILES = {
+    "README.md",
+    "README",
+    "README.txt",
+    "requirements.txt",
+    "requirements-dev.txt",
+    "pyproject.toml",
+    "package.json",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "Dockerfile",
+    "docker-compose.yml",
+    "docker-compose.yaml",
+    "Makefile",
+    ".env.example",
+    ".env.dev.example",
+    ".env.production.example",
+}
 
 
 # ============================================================
 # UTILIDADES
 # ============================================================
 
-def read_text(path):
+def read_text(path: Path) -> str | None:
     try:
-        return path.read_text(encoding="utf-8")
-    except UnicodeDecodeError:
-        try:
-            return path.read_text(encoding="latin-1")
-        except Exception:
-            return None
+        return path.read_text(
+            encoding="utf-8",
+            errors="ignore",
+        )
     except Exception:
         return None
 
 
-def rel_path(path, repo):
-    return str(path.relative_to(repo)).replace("\\", "/")
+def rel_path(path: Path, repo: Path) -> str:
+    return path.relative_to(repo).as_posix()
 
 
-def language(path):
+def language(path: Path) -> str:
     mapping = {
         ".py": "Python",
         ".js": "JavaScript",
@@ -99,6 +171,8 @@ def language(path):
         ".java": "Java",
         ".c": "C",
         ".cpp": "C++",
+        ".h": "C/C++",
+        ".hpp": "C++",
         ".cs": "C#",
         ".go": "Go",
         ".rs": "Rust",
@@ -106,42 +180,84 @@ def language(path):
         ".rb": "Ruby",
         ".swift": "Swift",
         ".kt": "Kotlin",
+        ".kts": "Kotlin",
         ".html": "HTML",
         ".htm": "HTML",
         ".css": "CSS",
         ".scss": "SCSS",
         ".sass": "SASS",
+        ".less": "LESS",
         ".sql": "SQL",
         ".json": "JSON",
         ".yaml": "YAML",
         ".yml": "YAML",
         ".toml": "TOML",
+        ".ini": "INI",
+        ".cfg": "Config",
         ".md": "Markdown",
+        ".txt": "Text",
         ".sh": "Shell",
         ".bat": "Batch",
         ".ps1": "PowerShell",
     }
 
-    return mapping.get(path.suffix.lower(), "Other")
+    return mapping.get(
+        path.suffix.lower(),
+        "Other",
+    )
 
 
-def clean_name(value):
-    value = re.sub(r"\s+", " ", value)
-    return value.strip()
+def add_unique(
+    collection: list,
+    value,
+):
+    if value not in collection:
+        collection.append(value)
+
+
+def evidence_item(
+    value,
+    file,
+    line=None,
+    evidence_type=None,
+    confidence="high",
+):
+    item = {
+        "value": value,
+        "file": file,
+        "confidence": confidence,
+    }
+
+    if line is not None:
+        item["line"] = line
+
+    if evidence_type:
+        item["type"] = evidence_type
+
+    return item
+
+
+def line_number(text: str, position: int) -> int:
+    return text.count(
+        "\n",
+        0,
+        position,
+    ) + 1
 
 
 # ============================================================
 # ESCANEO
 # ============================================================
 
-def scan(repo):
+def scan(repo: Path) -> list[dict]:
 
     result = []
 
     for root, dirs, files in os.walk(repo):
 
         dirs[:] = [
-            d for d in dirs
+            d
+            for d in dirs
             if d not in IGNORED_DIRS
         ]
 
@@ -157,14 +273,25 @@ def scan(repo):
             except OSError:
                 continue
 
-            result.append({
-                "path": rel_path(path, repo),
-                "name": filename,
-                "ext": path.suffix.lower(),
-                "language": language(path),
-                "size": size,
-                "text": path.suffix.lower() in TEXT_EXTENSIONS,
-            })
+            result.append(
+                {
+                    "path": rel_path(
+                        path,
+                        repo,
+                    ),
+                    "name": filename,
+                    "ext": path.suffix.lower(),
+                    "language": language(path),
+                    "size": size,
+                    "text": (
+                        path.suffix.lower()
+                        in TEXT_EXTENSIONS
+                    ),
+                    "important": (
+                        filename in IMPORTANT_FILES
+                    ),
+                }
+            )
 
     return result
 
@@ -173,18 +300,24 @@ def scan(repo):
 # PYTHON
 # ============================================================
 
-def analyze_python(path):
+def analyze_python(path: Path, repo: Path):
 
     text = read_text(path)
 
     if not text:
         return {}
 
+    relative = rel_path(
+        path,
+        repo,
+    )
+
     result = {
         "imports": [],
         "functions": [],
         "classes": [],
         "routes": [],
+        "env_vars": [],
     }
 
     try:
@@ -192,74 +325,130 @@ def analyze_python(path):
     except Exception:
         return result
 
+    lines = text.splitlines()
+
     for node in ast.walk(tree):
 
         if isinstance(node, ast.Import):
 
             for item in node.names:
-                result["imports"].append(item.name)
+
+                result["imports"].append(
+                    {
+                        "value": item.name,
+                        "line": node.lineno,
+                    }
+                )
 
         elif isinstance(node, ast.ImportFrom):
 
             if node.module:
-                result["imports"].append(node.module)
+
+                result["imports"].append(
+                    {
+                        "value": node.module,
+                        "line": node.lineno,
+                    }
+                )
 
         elif isinstance(
             node,
-            (ast.FunctionDef, ast.AsyncFunctionDef)
+            (
+                ast.FunctionDef,
+                ast.AsyncFunctionDef,
+            ),
         ):
 
-            result["functions"].append(node.name)
+            result["functions"].append(
+                {
+                    "name": node.name,
+                    "line": node.lineno,
+                }
+            )
 
-        elif isinstance(node, ast.ClassDef):
+        elif isinstance(
+            node,
+            ast.ClassDef,
+        ):
 
-            result["classes"].append(node.name)
+            result["classes"].append(
+                {
+                    "name": node.name,
+                    "line": node.lineno,
+                }
+            )
 
-    # Flask / FastAPI / generic decorators
+    # --------------------------------------------------------
+    # Flask / FastAPI / generic Python routes
+    # --------------------------------------------------------
+
     route_patterns = [
-        r'@\w+\.(get|post|put|delete|patch|route)\s*\(\s*[\'"]([^\'"]+)',
-        r'@app\.(get|post|put|delete|patch)\s*\(\s*[\'"]([^\'"]+)',
+        re.compile(
+            r'@\w+\.(get|post|put|patch|delete|route)'
+            r'\s*\(\s*[\'"]([^\'"]+)',
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r'@app\.(get|post|put|patch|delete)'
+            r'\s*\(\s*[\'"]([^\'"]+)',
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r'@router\.(get|post|put|patch|delete)'
+            r'\s*\(\s*[\'"]([^\'"]+)',
+            re.IGNORECASE,
+        ),
     ]
 
     for pattern in route_patterns:
 
-        for method, route in re.findall(
-            pattern,
-            text,
-            re.IGNORECASE
-        ):
+        for match in pattern.finditer(text):
 
-            result["routes"].append({
-                "method": method.upper(),
-                "path": route,
-            })
+            method = match.group(1).upper()
+            route = match.group(2)
 
-    result["imports"] = sorted(
-        set(result["imports"])
-    )
+            result["routes"].append(
+                {
+                    "method": method,
+                    "path": route,
+                    "line": line_number(
+                        text,
+                        match.start(),
+                    ),
+                    "file": relative,
+                }
+            )
 
-    result["functions"] = sorted(
-        set(result["functions"])
-    )
+    # --------------------------------------------------------
+    # Environment variables
+    # --------------------------------------------------------
 
-    result["classes"] = sorted(
-        set(result["classes"])
-    )
-
-    result["routes"] = sorted(
-        {
-            (r["method"], r["path"])
-            for r in result["routes"]
-        }
-    )
-
-    result["routes"] = [
-        {
-            "method": method,
-            "path": route,
-        }
-        for method, route in result["routes"]
+    env_patterns = [
+        re.compile(
+            r'os\.getenv\s*\(\s*[\'"]([A-Z][A-Z0-9_]+)',
+        ),
+        re.compile(
+            r'os\.environ\.get\s*\(\s*[\'"]([A-Z][A-Z0-9_]+)',
+        ),
+        re.compile(
+            r'os\.environ\[\s*[\'"]([A-Z][A-Z0-9_]+)',
+        ),
     ]
+
+    for pattern in env_patterns:
+
+        for match in pattern.finditer(text):
+
+            result["env_vars"].append(
+                {
+                    "value": match.group(1),
+                    "line": line_number(
+                        text,
+                        match.start(),
+                    ),
+                    "file": relative,
+                }
+            )
 
     return result
 
@@ -268,75 +457,188 @@ def analyze_python(path):
 # JAVASCRIPT / TYPESCRIPT
 # ============================================================
 
-def analyze_js(path):
+def analyze_js(path: Path, repo: Path):
 
     text = read_text(path)
 
     if not text:
         return {}
 
+    relative = rel_path(
+        path,
+        repo,
+    )
+
     result = {
         "imports": [],
         "exports": [],
         "components": [],
-        "api": [],
+        "api_calls": [],
         "routes": [],
+        "env_vars": [],
     }
 
-    result["imports"] = sorted(
-        set(
-            re.findall(
-                r'import\s+(?:.*?\s+from\s+)?[\'"]([^\'"]+)[\'"]',
-                text
-            )
+    # --------------------------------------------------------
+    # Imports
+    # --------------------------------------------------------
+
+    import_pattern = re.compile(
+        r'import\s+'
+        r'(?:[\s\S]*?\s+from\s+)?'
+        r'[\'"]([^\'"]+)[\'"]'
+    )
+
+    for match in import_pattern.finditer(text):
+
+        result["imports"].append(
+            {
+                "value": match.group(1),
+                "line": line_number(
+                    text,
+                    match.start(),
+                ),
+            }
         )
+
+    # --------------------------------------------------------
+    # Exports
+    # --------------------------------------------------------
+
+    export_pattern = re.compile(
+        r'export\s+'
+        r'(?:default\s+)?'
+        r'(?:function|class|const|let|var)?\s*'
+        r'([A-Za-z_$][\w$]*)?'
     )
 
-    result["exports"] = sorted(
-        set(
-            x for x in re.findall(
-                r'export\s+(?:default\s+)?'
-                r'(?:function|class|const|let|var)?\s*'
-                r'([A-Za-z_$][\w$]*)?',
-                text
+    for match in export_pattern.finditer(text):
+
+        if match.group(1):
+
+            result["exports"].append(
+                {
+                    "value": match.group(1),
+                    "line": line_number(
+                        text,
+                        match.start(),
+                    ),
+                }
             )
-            if x
-        )
-    )
 
-    result["components"] = sorted(
-        set(
-            re.findall(
-                r'(?:function|const)\s+'
-                r'([A-Z][A-Za-z0-9_$]*)',
-                text
+    # --------------------------------------------------------
+    # React components
+    # --------------------------------------------------------
+
+    component_patterns = [
+        re.compile(
+            r'(?:function|const)\s+'
+            r'([A-Z][A-Za-z0-9_$]*)'
+        ),
+    ]
+
+    for pattern in component_patterns:
+
+        for match in pattern.finditer(text):
+
+            result["components"].append(
+                {
+                    "value": match.group(1),
+                    "line": line_number(
+                        text,
+                        match.start(),
+                    ),
+                }
             )
+
+    # --------------------------------------------------------
+    # fetch()
+    # --------------------------------------------------------
+
+    fetch_pattern = re.compile(
+        r'fetch\s*\(\s*'
+        r'[\'"`]([^\'"`]+)'
+    )
+
+    for match in fetch_pattern.finditer(text):
+
+        result["api_calls"].append(
+            {
+                "method": "FETCH",
+                "target": match.group(1),
+                "line": line_number(
+                    text,
+                    match.start(),
+                ),
+                "file": relative,
+            }
         )
-    )
 
-    fetches = re.findall(
-        r'fetch\s*\(\s*[\'"`]([^\'"`]+)',
-        text
-    )
+    # --------------------------------------------------------
+    # axios
+    # --------------------------------------------------------
 
-    axios = re.findall(
-        r'axios\.(?:get|post|put|delete|patch)'
+    axios_pattern = re.compile(
+        r'axios\.(get|post|put|patch|delete)'
         r'\s*\(\s*[\'"`]([^\'"`]+)',
-        text
+        re.IGNORECASE,
     )
 
-    result["api"] = sorted(
-        set(fetches + axios)
-    )
+    for match in axios_pattern.finditer(text):
 
-    result["routes"] = sorted(
-        set(
-            re.findall(
-                r'(?:path|route)\s*[:=]\s*[\'"]([^\'"]+)',
-                text
-            )
+        result["api_calls"].append(
+            {
+                "method": match.group(1).upper(),
+                "target": match.group(2),
+                "line": line_number(
+                    text,
+                    match.start(),
+                ),
+                "file": relative,
+            }
         )
+
+    # --------------------------------------------------------
+    # React Router / generic routes
+    # --------------------------------------------------------
+
+    route_pattern = re.compile(
+        r'(?:path|route)\s*[:=]\s*'
+        r'[\'"]([^\'"]+)[\'"]'
     )
+
+    for match in route_pattern.finditer(text):
+
+        result["routes"].append(
+            {
+                "path": match.group(1),
+                "line": line_number(
+                    text,
+                    match.start(),
+                ),
+                "file": relative,
+            }
+        )
+
+    # --------------------------------------------------------
+    # VITE environment variables
+    # --------------------------------------------------------
+
+    env_pattern = re.compile(
+        r'import\.meta\.env\.([A-Z][A-Z0-9_]+)'
+    )
+
+    for match in env_pattern.finditer(text):
+
+        result["env_vars"].append(
+            {
+                "value": match.group(1),
+                "line": line_number(
+                    text,
+                    match.start(),
+                ),
+                "file": relative,
+            }
+        )
 
     return result
 
@@ -345,46 +647,175 @@ def analyze_js(path):
 # SQL
 # ============================================================
 
-def analyze_sql(path):
+def analyze_sql(path: Path, repo: Path):
 
     text = read_text(path)
 
     if not text:
         return {}
 
-    tables = re.findall(
-        r'\b(?:FROM|JOIN|INTO|UPDATE|TABLE)\s+'
-        r'["`]?([A-Za-z_][\w$]*)',
-        text,
-        re.IGNORECASE
+    relative = rel_path(
+        path,
+        repo,
     )
 
-    creates = re.findall(
-        r'CREATE\s+TABLE\s+'
-        r'(?:IF\s+NOT\s+EXISTS\s+)?'
-        r'["`]?([A-Za-z_][\w$]*)',
-        text,
-        re.IGNORECASE
+    result = {
+        "tables": [],
+        "operations": {},
+    }
+
+    table_patterns = [
+        re.compile(
+            r'CREATE\s+TABLE\s+'
+            r'(?:IF\s+NOT\s+EXISTS\s+)?'
+            r'["`]?([A-Za-z_][\w$.-]*)',
+            re.IGNORECASE,
+        ),
+        re.compile(
+            r'\b(?:FROM|JOIN|INTO|UPDATE)\s+'
+            r'["`]?([A-Za-z_][\w$.-]*)',
+            re.IGNORECASE,
+        ),
+    ]
+
+    for pattern in table_patterns:
+
+        for match in pattern.finditer(text):
+
+            result["tables"].append(
+                {
+                    "value": match.group(1),
+                    "file": relative,
+                    "line": line_number(
+                        text,
+                        match.start(),
+                    ),
+                }
+            )
+
+    for operation in (
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "CREATE",
+        "ALTER",
+        "DROP",
+    ):
+        result["operations"][operation] = len(
+            re.findall(
+                rf"\b{operation}\b",
+                text,
+                re.IGNORECASE,
+            )
+        )
+
+    return result
+
+
+# ============================================================
+# PACKAGE.JSON
+# ============================================================
+
+def analyze_package_json(
+    path: Path,
+    repo: Path,
+):
+
+    text = read_text(path)
+
+    if not text:
+        return {}
+
+    try:
+        data = json.loads(text)
+    except Exception:
+        return {}
+
+    relative = rel_path(
+        path,
+        repo,
     )
+
+    dependencies = {}
+
+    for section in (
+        "dependencies",
+        "devDependencies",
+        "peerDependencies",
+    ):
+        for name, version in data.get(
+            section,
+            {},
+        ).items():
+
+            dependencies[name] = {
+                "version": version,
+                "section": section,
+                "file": relative,
+            }
+
+    scripts = {}
+
+    for name, command in data.get(
+        "scripts",
+        {},
+    ).items():
+
+        scripts[name] = {
+            "command": command,
+            "file": relative,
+        }
 
     return {
-        "tables": sorted(
-            set(tables + creates)
-        ),
-        "creates": len(creates),
-        "select": len(
-            re.findall(r'\bSELECT\b', text, re.I)
-        ),
-        "insert": len(
-            re.findall(r'\bINSERT\b', text, re.I)
-        ),
-        "update": len(
-            re.findall(r'\bUPDATE\b', text, re.I)
-        ),
-        "delete": len(
-            re.findall(r'\bDELETE\b', text, re.I)
-        ),
+        "name": data.get("name"),
+        "version": data.get("version"),
+        "description": data.get("description"),
+        "dependencies": dependencies,
+        "scripts": scripts,
     }
+
+
+# ============================================================
+# REQUIREMENTS
+# ============================================================
+
+def analyze_requirements(
+    path: Path,
+    repo: Path,
+):
+
+    text = read_text(path)
+
+    if not text:
+        return []
+
+    relative = rel_path(
+        path,
+        repo,
+    )
+
+    result = []
+
+    for index, raw in enumerate(
+        text.splitlines(),
+        start=1,
+    ):
+
+        line = raw.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        result.append(
+            {
+                "value": line,
+                "file": relative,
+                "line": index,
+            }
+        )
+
+    return result
 
 
 # ============================================================
@@ -392,91 +823,164 @@ def analyze_sql(path):
 # ============================================================
 
 TECHNOLOGIES = {
-
-    "React": r"\breact\b",
-    "Vite": r"\bvite\b",
-    "Vue": r"\bvue\b",
-    "Angular": r"@angular/",
-    "Flask": r"\bflask\b",
-    "FastAPI": r"\bfastapi\b",
-    "Django": r"\bdjango\b",
-    "Express": r"\bexpress\b",
-    "Node.js": r"\bnode\b",
-
-    "PostgreSQL": r"postgresql|psycopg",
-    "MySQL": r"\bmysql\b",
-    "SQLite": r"\bsqlite\b",
-    "MongoDB": r"mongodb|mongoose",
-    "Redis": r"\bredis\b",
-
-    "Docker": r"\bdocker\b",
-    "Leaflet": r"\bleaflet\b",
-    "Mapbox": r"\bmapbox\b",
-    "Tailwind": r"\btailwind\b",
-
-    "Pandas": r"\bpandas\b",
-    "NumPy": r"\bnumpy\b",
-    "OpenCV": r"\bcv2\b|opencv",
-    "YOLO": r"\byolo\b",
+    "React": [
+        r"\breact\b",
+    ],
+    "Vite": [
+        r"\bvite\b",
+    ],
+    "Vue": [
+        r"\bvue\b",
+    ],
+    "Angular": [
+        r"@angular/",
+    ],
+    "Flask": [
+        r"\bflask\b",
+    ],
+    "FastAPI": [
+        r"\bfastapi\b",
+    ],
+    "Django": [
+        r"\bdjango\b",
+    ],
+    "Express": [
+        r"\bexpress\b",
+    ],
+    "Node.js": [
+        r"\bnode\b",
+    ],
+    "PostgreSQL": [
+        r"\bpostgresql\b",
+        r"\bpsycopg\b",
+    ],
+    "MySQL": [
+        r"\bmysql\b",
+    ],
+    "SQLite": [
+        r"\bsqlite\b",
+    ],
+    "MongoDB": [
+        r"\bmongodb\b",
+        r"\bmongoose\b",
+    ],
+    "Redis": [
+        r"\bredis\b",
+    ],
+    "Docker": [
+        r"\bdocker\b",
+    ],
+    "Leaflet": [
+        r"\bleaflet\b",
+    ],
+    "Mapbox": [
+        r"\bmapbox\b",
+    ],
+    "Tailwind": [
+        r"\btailwind\b",
+    ],
+    "Pandas": [
+        r"\bpandas\b",
+    ],
+    "NumPy": [
+        r"\bnumpy\b",
+    ],
+    "OpenCV": [
+        r"\bcv2\b",
+        r"\bopencv\b",
+    ],
+    "YOLO": [
+        r"\byolo\b",
+    ],
+    "SQLAlchemy": [
+        r"\bsqlalchemy\b",
+    ],
 }
 
 
-def detect_technologies(files, repo):
+def detect_technologies(
+    files,
+    repo,
+):
 
-    found = Counter()
+    result = {}
 
-    for file in files:
-
-        if not file["text"]:
-            continue
-
-        if file["size"] > MAX_FILE_SIZE:
-            continue
-
-        path = repo / file["path"]
-
-        text = read_text(path)
-
-        if not text:
-            continue
-
-        for name, pattern in TECHNOLOGIES.items():
-
-            if re.search(
-                pattern,
-                text,
-                re.IGNORECASE
-            ):
-                found[name] += 1
-
-    for filename in [
+    priority_files = {
         "package.json",
         "requirements.txt",
         "pyproject.toml",
+        "Dockerfile",
         "docker-compose.yml",
         "docker-compose.yaml",
-    ]:
+    }
 
-        path = repo / filename
+    for name, patterns in TECHNOLOGIES.items():
 
-        if not path.exists():
-            continue
+        matches = []
 
-        text = read_text(path)
+        for file in files:
 
-        if not text:
-            continue
+            if not file["text"]:
+                continue
 
-        for name, pattern in TECHNOLOGIES.items():
+            if file["size"] > MAX_FILE_SIZE:
+                continue
 
-            if re.search(
-                pattern,
-                text,
-                re.IGNORECASE
-            ):
-                found[name] += 10
+            path = repo / file["path"]
 
-    return found
+            text = read_text(path)
+
+            if not text:
+                continue
+
+            weight = (
+                10
+                if file["name"] in priority_files
+                else 1
+            )
+
+            for pattern in patterns:
+
+                match = re.search(
+                    pattern,
+                    text,
+                    re.IGNORECASE,
+                )
+
+                if match:
+
+                    matches.append(
+                        {
+                            "file": file["path"],
+                            "line": line_number(
+                                text,
+                                match.start(),
+                            ),
+                            "weight": weight,
+                            "pattern": pattern,
+                        }
+                    )
+
+        if matches:
+
+            total_weight = sum(
+                item["weight"]
+                for item in matches
+            )
+
+            if total_weight >= 10:
+                confidence = "high"
+            elif total_weight >= 3:
+                confidence = "medium"
+            else:
+                confidence = "low"
+
+            result[name] = {
+                "confidence": confidence,
+                "evidence": matches[:20],
+            }
+
+    return result
 
 
 # ============================================================
@@ -485,103 +989,127 @@ def detect_technologies(files, repo):
 
 def dependencies(repo):
 
-    result = []
+    result = {
+        "npm": [],
+        "python": [],
+    }
 
     package = repo / "package.json"
 
     if package.exists():
 
-        try:
+        data = analyze_package_json(
+            package,
+            repo,
+        )
 
-            data = json.loads(
-                read_text(package)
+        for name, info in data.get(
+            "dependencies",
+            {},
+        ).items():
+
+            result["npm"].append(
+                {
+                    "name": name,
+                    "version": info["version"],
+                    "section": info["section"],
+                    "file": info["file"],
+                }
             )
 
-            for section in [
-                "dependencies",
-                "devDependencies"
-            ]:
+    for filename in (
+        "requirements.txt",
+        "requirements-dev.txt",
+    ):
 
-                for name, version in data.get(
-                    section,
-                    {}
-                ).items():
+        path = repo / filename
 
-                    result.append(
-                        f"{name}@{version}"
-                    )
+        if not path.exists():
+            continue
 
-        except Exception:
-            pass
+        result["python"].extend(
+            analyze_requirements(
+                path,
+                repo,
+            )
+        )
 
-    requirements = repo / "requirements.txt"
-
-    if requirements.exists():
-
-        text = read_text(requirements)
-
-        if text:
-
-            for line in text.splitlines():
-
-                line = line.strip()
-
-                if (
-                    line
-                    and not line.startswith("#")
-                ):
-                    result.append(line)
-
-    return sorted(set(result))
+    return result
 
 
 # ============================================================
 # VARIABLES DE ENTORNO
 # ============================================================
 
-def detect_env_vars(files, repo):
+def detect_env_vars(
+    analysis,
+    package_analysis,
+):
 
-    result = set()
+    result = []
 
-    patterns = [
+    for path, data in analysis.items():
 
-        r'os\.getenv\s*\(\s*[\'"]([^\'"]+)',
-        r'os\.environ\.get\s*\(\s*[\'"]([^\'"]+)',
-        r'process\.env\.([A-Za-z_][A-Za-z0-9_]*)',
-    ]
+        for item in data.get(
+            "python",
+            {},
+        ).get(
+            "env_vars",
+            [],
+        ):
 
-    for file in files:
-
-        if not file["text"]:
-            continue
-
-        if file["size"] > MAX_FILE_SIZE:
-            continue
-
-        path = repo / file["path"]
-
-        text = read_text(path)
-
-        if not text:
-            continue
-
-        for pattern in patterns:
-
-            result.update(
-                re.findall(
-                    pattern,
-                    text
-                )
+            result.append(
+                {
+                    "value": item["value"],
+                    "file": item["file"],
+                    "line": item["line"],
+                    "type": "python",
+                }
             )
 
-    return sorted(result)
+        for item in data.get(
+            "javascript",
+            {},
+        ).get(
+            "env_vars",
+            [],
+        ):
+
+            result.append(
+                {
+                    "value": item["value"],
+                    "file": item["file"],
+                    "line": item["line"],
+                    "type": "javascript",
+                }
+            )
+
+    unique = {}
+
+    for item in result:
+
+        key = item["value"]
+
+        if key not in unique:
+            unique[key] = item
+
+    return sorted(
+        unique.values(),
+        key=lambda x: x["value"],
+    )
 
 
 # ============================================================
 # CAPACIDADES
+#
+# IMPORTANTE:
+#
+# Esto NO declara funcionalidades.
+#
+# Solo registra señales.
 # ============================================================
 
-CAPABILITIES = {
+CAPABILITY_SIGNALS = {
 
     "Autenticación": [
         "login",
@@ -592,12 +1120,11 @@ CAPABILITIES = {
         "authenticate",
     ],
 
-    "Mapas": [
+    "Mapas / cartografía": [
         "leaflet",
         "mapbox",
-        "mapa",
         "cartografia",
-        "map",
+        "mapa",
     ],
 
     "Exportación": [
@@ -606,7 +1133,6 @@ CAPABILITIES = {
         "csv",
         "xlsx",
         "excel",
-        "pdf",
     ],
 
     "Carga de archivos": [
@@ -616,7 +1142,7 @@ CAPABILITIES = {
         "document",
     ],
 
-    "Reportes": [
+    "Reportes / analítica": [
         "report",
         "reporte",
         "dashboard",
@@ -624,20 +1150,9 @@ CAPABILITIES = {
         "estadistica",
     ],
 
-    "Base de datos": [
-        "postgres",
-        "mysql",
-        "sqlite",
-        "mongodb",
-        "database",
-        "sqlalchemy",
-        "psycopg",
-    ],
-
     "Procesamiento de datos": [
         "pandas",
         "numpy",
-        "csv",
         "dataframe",
         "etl",
     ],
@@ -647,55 +1162,77 @@ CAPABILITIES = {
         "pytorch",
         "torch",
         "yolo",
-        "model",
         "machine learning",
     ],
 }
 
 
-def detect_capabilities(files, repo):
-
-    path_text = " ".join(
-        file["path"].lower()
-        for file in files
-    )
-
-    content_parts = []
-
-    for file in files:
-
-        if not file["text"]:
-            continue
-
-        if file["size"] > 300_000:
-            continue
-
-        path = repo / file["path"]
-
-        text = read_text(path)
-
-        if text:
-            content_parts.append(
-                text[:100_000].lower()
-            )
-
-    content = path_text + " " + " ".join(
-        content_parts
-    )
+def detect_capabilities(
+    files,
+    repo,
+):
 
     result = {}
 
-    for capability, keywords in CAPABILITIES.items():
+    for capability, keywords in (
+        CAPABILITY_SIGNALS.items()
+    ):
 
-        matches = [
-            keyword
-            for keyword in keywords
-            if keyword.lower() in content
-        ]
+        matches = []
+
+        for file in files:
+
+            if not file["text"]:
+                continue
+
+            if file["size"] > 500_000:
+                continue
+
+            path = repo / file["path"]
+
+            text = read_text(path)
+
+            if not text:
+                continue
+
+            lower_text = text.lower()
+
+            for keyword in keywords:
+
+                start = lower_text.find(
+                    keyword.lower()
+                )
+
+                if start == -1:
+                    continue
+
+                matches.append(
+                    {
+                        "keyword": keyword,
+                        "file": file["path"],
+                        "line": line_number(
+                            text,
+                            start,
+                        ),
+                    }
+                )
 
         if matches:
 
-            result[capability] = matches[:6]
+            unique_files = {
+                item["file"]
+                for item in matches
+            }
+
+            if len(unique_files) >= 3:
+                confidence = "medium"
+            else:
+                confidence = "low"
+
+            result[capability] = {
+                "confidence": confidence,
+                "signals": matches[:20],
+            }
 
     return result
 
@@ -706,11 +1243,11 @@ def detect_capabilities(files, repo):
 
 def existing_readme(repo):
 
-    for filename in [
+    for filename in (
         "README.md",
         "README",
         "README.txt",
-    ]:
+    ):
 
         path = repo / filename
 
@@ -724,49 +1261,71 @@ def existing_readme(repo):
     return None
 
 
+def summarize_existing_readme(
+    readme,
+):
+
+    if not readme:
+        return []
+
+    lines = []
+
+    for line in readme.splitlines():
+
+        line = line.strip()
+
+        if not line:
+            continue
+
+        if line.startswith("!["):
+            continue
+
+        if line.startswith("[!["):
+            continue
+
+        if len(line) > 240:
+            line = line[:240] + "..."
+
+        lines.append(line)
+
+        if len(lines) >= 35:
+            break
+
+    return lines
+
+
 # ============================================================
 # ARCHIVOS IMPORTANTES
 # ============================================================
 
 IMPORTANT_KEYWORDS = [
-
     "package.json",
     "requirements.txt",
     "pyproject.toml",
-
     "dockerfile",
     "docker-compose",
-
     "main.py",
     "app.py",
     "server.py",
-
     "index.js",
     "index.ts",
-
     "vite.config",
     "next.config",
     "angular.json",
-
     "manage.py",
-
     "routes",
     "router",
     "api",
-
     "database",
     "db",
     "model",
     "schema",
     "service",
     "controller",
-
     "config",
     "settings",
-
     "auth",
     "login",
-
     "deploy",
     "docker",
     "workflow",
@@ -796,21 +1355,30 @@ def important_files(files):
             "docker-compose.yml",
             "docker-compose.yaml",
         }:
+            score += 10
+
+        if file["name"] in IMPORTANT_FILES:
             score += 5
 
         if score:
 
             scored.append(
-                (score, file["path"])
+                (
+                    score,
+                    file["path"],
+                )
             )
 
     scored.sort(
-        key=lambda x: (-x[0], x[1])
+        key=lambda x: (
+            -x[0],
+            x[1],
+        )
     )
 
     return [
         path
-        for _, path in scored[:60]
+        for _, path in scored[:80]
     ]
 
 
@@ -837,10 +1405,13 @@ def structure(files):
 
 
 # ============================================================
-# ANÁLISIS
+# ANÁLISIS DE ARCHIVOS
 # ============================================================
 
-def analyze_files(repo, files):
+def analyze_files(
+    repo,
+    files,
+):
 
     analysis = {}
 
@@ -858,7 +1429,10 @@ def analyze_files(repo, files):
 
         if file["language"] == "Python":
 
-            data["python"] = analyze_python(path)
+            data["python"] = analyze_python(
+                path,
+                repo,
+            )
 
         elif file["language"] in {
             "JavaScript",
@@ -867,56 +1441,133 @@ def analyze_files(repo, files):
             "React+TS",
         }:
 
-            data["javascript"] = analyze_js(path)
+            data["javascript"] = analyze_js(
+                path,
+                repo,
+            )
 
         elif file["language"] == "SQL":
 
-            data["sql"] = analyze_sql(path)
+            data["sql"] = analyze_sql(
+                path,
+                repo,
+            )
 
         if data:
-
             analysis[file["path"]] = data
 
     return analysis
 
 
 # ============================================================
-# README EXISTENTE - INFORMACIÓN ÚTIL
+# API RESUMEN
 # ============================================================
 
-def summarize_existing_readme(readme):
+def collect_api(analysis):
 
-    if not readme:
-        return []
+    items = []
 
-    lines = []
+    for path, data in analysis.items():
 
-    for line in readme.splitlines():
+        python_data = data.get(
+            "python",
+            {},
+        )
 
-        line = line.strip()
+        for route in python_data.get(
+            "routes",
+            [],
+        ):
 
-        if not line:
-            continue
+            items.append(
+                {
+                    "method": route["method"],
+                    "path": route["path"],
+                    "file": route["file"],
+                    "line": route["line"],
+                    "type": "backend_route",
+                }
+            )
 
-        if line.startswith("!["):
-            continue
+        js_data = data.get(
+            "javascript",
+            {},
+        )
 
-        if line.startswith("[!["):
-            continue
+        for call in js_data.get(
+            "api_calls",
+            [],
+        ):
 
-        if len(line) > 240:
-            line = line[:240]
+            items.append(
+                {
+                    "method": call["method"],
+                    "path": call["target"],
+                    "file": call["file"],
+                    "line": call["line"],
+                    "type": "frontend_api_call",
+                }
+            )
 
-        lines.append(line)
+    unique = {}
 
-        if len(lines) >= 25:
-            break
+    for item in items:
 
-    return lines
+        key = (
+            item["method"],
+            item["path"],
+            item["file"],
+            item["line"],
+        )
+
+        unique[key] = item
+
+    return list(
+        unique.values()
+    )[:MAX_API_ITEMS]
 
 
 # ============================================================
-# GENERAR CONTEXTO
+# DATABASE
+# ============================================================
+
+def collect_tables(analysis):
+
+    items = []
+
+    for path, data in analysis.items():
+
+        sql = data.get(
+            "sql",
+            {},
+        )
+
+        items.extend(
+            sql.get(
+                "tables",
+                [],
+            )
+        )
+
+    unique = {}
+
+    for item in items:
+
+        key = (
+            item["value"],
+            item["file"],
+            item["line"],
+        )
+
+        unique[key] = item
+
+    return list(
+        unique.values()
+    )[:MAX_TABLE_ITEMS]
+
+
+# ============================================================
+# CONTEXTO COMPACTO
 # ============================================================
 
 def generate_context(
@@ -932,20 +1583,49 @@ def generate_context(
 
     lines = []
 
-    lines.append("# PROJECT CONTEXT")
+    lines.append(
+        "# PROJECT EVIDENCE CONTEXT"
+    )
+
     lines.append(
         f"PROJECT={repo.name}"
     )
+
     lines.append(
         f"FILES={len(files)}"
+    )
+
+    lines.append(
+        f"GENERATED={datetime.now().isoformat()}"
+    )
+
+    # --------------------------------------------------------
+    # PRINCIPIOS
+    # --------------------------------------------------------
+
+    lines.extend(
+        [
+            "",
+            "## EVIDENCE_POLICY",
+            "",
+            "This context contains repository evidence.",
+            "Signals are not guaranteed business features.",
+            "Do not infer unsupported functionality.",
+            "Prefer explicit files, dependencies and source evidence.",
+            "If evidence is insufficient, omit the claim.",
+        ]
     )
 
     # --------------------------------------------------------
     # STACK
     # --------------------------------------------------------
 
-    lines.append("")
-    lines.append("## STACK")
+    lines.extend(
+        [
+            "",
+            "## STACK",
+        ]
+    )
 
     langs = Counter(
         file["language"]
@@ -959,82 +1639,123 @@ def generate_context(
             "LANG=" +
             ",".join(
                 name
-                for name, _ in langs.most_common(10)
+                for name, _ in
+                langs.most_common(15)
             )
         )
 
     if technologies:
 
+        tech_values = []
+
+        for name, info in (
+            sorted(
+                technologies.items()
+            )
+        ):
+            tech_values.append(
+                f"{name}[{info['confidence']}]"
+            )
+
         lines.append(
             "TECH=" +
             ",".join(
-                technologies.most_common(20)[i][0]
-                for i in range(
-                    min(20, len(technologies))
-                )
+                tech_values[:25]
             )
         )
 
     # --------------------------------------------------------
-    # DEPENDENCIAS IMPORTANTES
+    # DEPENDENCIAS
     # --------------------------------------------------------
 
-    if deps:
+    npm_deps = deps.get(
+        "npm",
+        []
+    )
 
-        lines.append("")
-        lines.append("## DEPENDENCIES")
+    python_deps = deps.get(
+        "python",
+        []
+    )
 
-        # Priorizar dependencias conocidas.
-        important_deps = []
+    if npm_deps:
 
-        for dep in deps:
-
-            name = dep.lower()
-
-            if any(
-                keyword in name
-                for keyword in [
-                    "react",
-                    "vite",
-                    "vue",
-                    "angular",
-                    "flask",
-                    "fastapi",
-                    "django",
-                    "express",
-                    "postgres",
-                    "psycopg",
-                    "sqlalchemy",
-                    "pandas",
-                    "numpy",
-                    "torch",
-                    "tensorflow",
-                    "leaflet",
-                    "mapbox",
-                    "tailwind",
-                    "axios",
-                    "openai",
-                    "zai",
-                ]
-            ):
-                important_deps.append(dep)
-
-        selected = (
-            important_deps[:45]
-            if important_deps
-            else deps[:45]
+        lines.extend(
+            [
+                "",
+                "## NPM_DEPENDENCIES",
+            ]
         )
 
         lines.append(
-            ",".join(selected)
+            ",".join(
+                f"{item['name']}@{item['version']}"
+                for item in npm_deps[:50]
+            )
         )
+
+    if python_deps:
+
+        lines.extend(
+            [
+                "",
+                "## PYTHON_DEPENDENCIES",
+            ]
+        )
+
+        lines.append(
+            ",".join(
+                item["value"]
+                for item in python_deps[:50]
+            )
+        )
+
+    # --------------------------------------------------------
+    # SCRIPTS
+    # --------------------------------------------------------
+
+    package_path = (
+        repo / "package.json"
+    )
+
+    if package_path.exists():
+
+        package_info = analyze_package_json(
+            package_path,
+            repo,
+        )
+
+        scripts = package_info.get(
+            "scripts",
+            {},
+        )
+
+        if scripts:
+
+            lines.extend(
+                [
+                    "",
+                    "## NPM_SCRIPTS",
+                ]
+            )
+
+            for name, info in (
+                scripts.items()
+            ):
+                lines.append(
+                    f"{name}={info['command']}"
+                )
 
     # --------------------------------------------------------
     # ESTRUCTURA
     # --------------------------------------------------------
 
-    lines.append("")
-    lines.append("## STRUCTURE")
+    lines.extend(
+        [
+            "",
+            "## STRUCTURE",
+        ]
+    )
 
     roots = structure(files)
 
@@ -1043,7 +1764,7 @@ def generate_context(
         ",".join(
             f"{name}({count})"
             for name, count
-            in roots.most_common(25)
+            in roots.most_common(30)
         )
     )
 
@@ -1051,161 +1772,157 @@ def generate_context(
     # ARCHIVOS CLAVE
     # --------------------------------------------------------
 
-    important = important_files(files)
+    key_files = important_files(
+        files
+    )
 
-    if important:
+    if key_files:
 
-        lines.append("")
-        lines.append("## KEY_FILES")
-
-        lines.append(
-            ",".join(important)
+        lines.extend(
+            [
+                "",
+                "## KEY_FILES",
+                ",".join(key_files),
+            ]
         )
 
     # --------------------------------------------------------
     # API
     # --------------------------------------------------------
 
-    api_items = []
-
-    for path, data in analysis.items():
-
-        py = data.get(
-            "python",
-            {}
-        )
-
-        for route in py.get(
-            "routes",
-            []
-        ):
-
-            api_items.append(
-                f"{route['method']} {route['path']}"
-            )
-
-        js = data.get(
-            "javascript",
-            {}
-        )
-
-        for route in js.get(
-            "routes",
-            []
-        ):
-
-            api_items.append(
-                f"ROUTE {route}"
-            )
-
-        for api in js.get(
-            "api",
-            []
-        ):
-
-            api_items.append(
-                f"CALL {api}"
-            )
+    api_items = collect_api(
+        analysis
+    )
 
     if api_items:
 
-        lines.append("")
-        lines.append("## API")
-
-        lines.append(
-            ",".join(
-                sorted(set(api_items))[:100]
-            )
+        lines.extend(
+            [
+                "",
+                "## API_EVIDENCE",
+            ]
         )
+
+        for item in api_items:
+
+            lines.append(
+                f"{item['method']} "
+                f"{item['path']} "
+                f"[{item['file']}:{item['line']}]"
+            )
 
     # --------------------------------------------------------
-    # BASE DE DATOS
+    # DATABASE
     # --------------------------------------------------------
 
-    tables = set()
-
-    for data in analysis.values():
-
-        sql = data.get(
-            "sql",
-            {}
-        )
-
-        tables.update(
-            sql.get(
-                "tables",
-                []
-            )
-        )
+    tables = collect_tables(
+        analysis
+    )
 
     if tables:
 
-        lines.append("")
-        lines.append("## DATABASE")
-
-        lines.append(
-            "TABLES=" +
-            ",".join(
-                sorted(tables)[:100]
-            )
+        lines.extend(
+            [
+                "",
+                "## DATABASE_EVIDENCE",
+            ]
         )
 
+        for item in tables:
+
+            lines.append(
+                f"{item['value']} "
+                f"[{item['file']}:{item['line']}]"
+            )
+
     # --------------------------------------------------------
-    # VARIABLES DE ENTORNO
+    # ENV
     # --------------------------------------------------------
 
     if env_vars:
 
-        lines.append("")
-        lines.append("## ENV")
-
-        lines.append(
-            ",".join(env_vars[:50])
+        lines.extend(
+            [
+                "",
+                "## ENV_EVIDENCE",
+            ]
         )
 
+        for item in env_vars[:MAX_ENV_ITEMS]:
+
+            lines.append(
+                f"{item['value']} "
+                f"[{item['file']}:{item['line']}]"
+            )
+
     # --------------------------------------------------------
-    # CAPACIDADES
+    # CAPACIDADES / SEÑALES
     # --------------------------------------------------------
 
     if capabilities:
 
-        lines.append("")
-        lines.append("## CAPABILITIES")
+        lines.extend(
+            [
+                "",
+                "## CAPABILITY_SIGNALS",
+            ]
+        )
 
-        for capability, signals in capabilities.items():
+        for capability, info in (
+            capabilities.items()
+        ):
 
             lines.append(
-                f"{capability}="
-                + ",".join(signals)
+                f"{capability} "
+                f"[confidence={info['confidence']}]"
             )
+
+            for signal in info["signals"][:8]:
+
+                lines.append(
+                    "  "
+                    f"{signal['keyword']} "
+                    f"[{signal['file']}:{signal['line']}]"
+                )
 
     # --------------------------------------------------------
     # PYTHON
     # --------------------------------------------------------
 
-    python_modules = []
+    python_count = 0
 
     for path, data in analysis.items():
 
-        py = data.get("python")
+        py = data.get(
+            "python"
+        )
 
         if not py:
             continue
 
-        classes = py.get(
-            "classes",
-            []
-        )
+        classes = [
+            item["name"]
+            for item in py.get(
+                "classes",
+                []
+            )
+        ]
 
-        functions = py.get(
-            "functions",
-            []
-        )
+        functions = [
+            item["name"]
+            for item in py.get(
+                "functions",
+                []
+            )
+        ]
 
-        imports = py.get(
-            "imports",
-            []
-        )
+        imports = [
+            item["value"]
+            for item in py.get(
+                "imports",
+                []
+            )
+        ]
 
         if not (
             classes
@@ -1217,42 +1934,49 @@ def generate_context(
         entry = path
 
         if classes:
-
             entry += (
                 "|C="
-                + ",".join(classes[:12])
+                + ",".join(
+                    classes[:12]
+                )
             )
 
         if functions:
-
             entry += (
                 "|F="
-                + ",".join(functions[:18])
+                + ",".join(
+                    functions[:18]
+                )
             )
 
         if imports:
-
             entry += (
                 "|I="
-                + ",".join(imports[:12])
+                + ",".join(
+                    imports[:12]
+                )
             )
 
-        python_modules.append(entry)
+        python_count += 1
 
-    if python_modules:
+        if python_count <= 60:
+            if python_count == 1:
+                lines.extend(
+                    [
+                        "",
+                        "## PYTHON",
+                    ]
+                )
 
-        lines.append("")
-        lines.append("## PYTHON")
-
-        lines.extend(
-            python_modules[:45]
-        )
+            lines.append(
+                entry
+            )
 
     # --------------------------------------------------------
     # COMPONENTES
     # --------------------------------------------------------
 
-    components = []
+    component_count = 0
 
     for path, data in analysis.items():
 
@@ -1263,27 +1987,36 @@ def generate_context(
         if not js:
             continue
 
-        comps = js.get(
-            "components",
-            []
-        )
+        components = [
+            item["value"]
+            for item in js.get(
+                "components",
+                []
+            )
+        ]
 
-        if comps:
+        if not components:
+            continue
 
-            components.append(
-                path
-                + ":"
-                + ",".join(comps[:15])
+        component_count += 1
+
+        if component_count == 1:
+            lines.extend(
+                [
+                    "",
+                    "## COMPONENTS",
+                ]
             )
 
-    if components:
+        if component_count <= 60:
 
-        lines.append("")
-        lines.append("## COMPONENTS")
-
-        lines.extend(
-            components[:50]
-        )
+            lines.append(
+                path
+                + ":"
+                + ",".join(
+                    components[:15]
+                )
+            )
 
     # --------------------------------------------------------
     # README EXISTENTE
@@ -1295,15 +2028,19 @@ def generate_context(
 
     if readme_summary:
 
-        lines.append("")
-        lines.append("## EXISTING_README")
+        lines.extend(
+            [
+                "",
+                "## EXISTING_README",
+            ]
+        )
 
         lines.extend(
             readme_summary
         )
 
     # --------------------------------------------------------
-    # CONFIGURACIÓN / DEPLOY
+    # DEPLOYMENT / CONFIG
     # --------------------------------------------------------
 
     deployment_files = []
@@ -1314,7 +2051,8 @@ def generate_context(
         path = file["path"].lower()
 
         if any(
-            token in name or token in path
+            token in name
+            or token in path
             for token in [
                 "docker",
                 "compose",
@@ -1333,47 +2071,121 @@ def generate_context(
 
     if deployment_files:
 
-        lines.append("")
-        lines.append("## DEPLOYMENT")
+        lines.extend(
+            [
+                "",
+                "## DEPLOYMENT_FILES",
+            ]
+        )
 
         lines.append(
             ",".join(
-                sorted(set(deployment_files))[:40]
+                sorted(
+                    set(
+                        deployment_files
+                    )
+                )[:50]
             )
         )
 
     # --------------------------------------------------------
-    # INSTRUCCIONES PARA EL LLM
+    # REGLAS LLM
     # --------------------------------------------------------
 
-    lines.append("")
-    lines.append("## README_RULES")
-
-    lines.append(
-        "Generate a professional README.md using only evidence in this context."
+    lines.extend(
+        [
+            "",
+            "## README_RULES",
+            "",
+            "Generate README.md only from repository evidence.",
+            "Do not invent features.",
+            "Do not invent technologies.",
+            "Do not invent endpoints.",
+            "Do not invent database tables.",
+            "Do not invent environment variables.",
+            "Do not invent commands.",
+            "Do not infer production architecture from filenames alone.",
+            "Treat capability signals as signals, not confirmed features.",
+            "Prefer explicit source evidence.",
+            "Omit unsupported sections.",
+        ]
     )
 
-    lines.append(
-        "Explain the project's purpose, architecture, main capabilities, stack, structure, setup and usage when evidence exists."
+    return "\n".join(
+        lines
     )
 
-    lines.append(
-        "Do not invent features, endpoints, commands, credentials, environment values, database tables or deployment platforms."
-    )
 
-    lines.append(
-        "If an important README section lacks evidence, omit it instead of guessing."
-    )
+# ============================================================
+# JSON EVIDENCE
+# ============================================================
 
-    lines.append(
-        "Prefer concrete repository evidence over generic explanations."
-    )
+def build_evidence_json(
+    repo,
+    files,
+    analysis,
+    technologies,
+    deps,
+    env_vars,
+    capabilities,
+    readme,
+):
 
-    lines.append(
-        "Use the existing README only as contextual evidence; improve its structure and accuracy."
-    )
+    return {
+        "metadata": {
+            "repository": repo.name,
+            "generated_at": datetime.now().isoformat(),
+            "analyzer": "readme3",
+            "version": "2.0-evidence-first",
+            "file_count": len(files),
+        },
 
-    return "\n".join(lines)
+        "policy": {
+            "purpose": (
+                "Repository evidence extraction for "
+                "documentation generation."
+            ),
+            "important_rule": (
+                "Signals do not automatically represent "
+                "confirmed product capabilities."
+            ),
+        },
+
+        "files": files,
+
+        "structure": dict(
+            structure(files)
+        ),
+
+        "important_files": important_files(
+            files
+        ),
+
+        "technologies": technologies,
+
+        "dependencies": deps,
+
+        "environment_variables": env_vars,
+
+        "api": collect_api(
+            analysis
+        ),
+
+        "database_tables": collect_tables(
+            analysis
+        ),
+
+        "capability_signals": capabilities,
+
+        "analysis": analysis,
+
+        "existing_readme": {
+            "exists": bool(readme),
+            "summary": summarize_existing_readme(
+                readme
+            ),
+        },
+    }
 
 
 # ============================================================
@@ -1384,9 +2196,11 @@ def main():
 
     if len(sys.argv) != 2:
 
+        print()
         print(
             'Uso: python readme3.py "RUTA_REPOSITORIO"'
         )
+        print()
 
         sys.exit(1)
 
@@ -1410,13 +2224,14 @@ def main():
 
         sys.exit(1)
 
-    print("")
+    print()
     print("=" * 70)
     print(
-        " README3 - HIGH QUALITY COMPACT CONTEXT"
+        " README3 - EVIDENCE-FIRST REPOSITORY ANALYZER"
     )
     print("=" * 70)
-    print("")
+    print()
+
     print(
         f"Repositorio: {repo}"
     )
@@ -1425,10 +2240,12 @@ def main():
     # 1
     # --------------------------------------------------------
 
-    print("")
+    print()
     print("[1/6] Escaneando...")
 
-    files = scan(repo)
+    files = scan(
+        repo
+    )
 
     print(
         f"      {len(files)} archivos."
@@ -1444,7 +2261,7 @@ def main():
 
     analysis = analyze_files(
         repo,
-        files
+        files,
     )
 
     # --------------------------------------------------------
@@ -1457,7 +2274,7 @@ def main():
 
     technologies = detect_technologies(
         files,
-        repo
+        repo,
     )
 
     # --------------------------------------------------------
@@ -1465,22 +2282,26 @@ def main():
     # --------------------------------------------------------
 
     print(
-        "[4/6] Detectando dependencias..."
+        "[4/6] Detectando dependencias y configuración..."
     )
 
-    deps = dependencies(repo)
+    deps = dependencies(
+        repo
+    )
 
     env_vars = detect_env_vars(
-        files,
-        repo
+        analysis,
+        {},
     )
 
     capabilities = detect_capabilities(
         files,
-        repo
+        repo,
     )
 
-    readme = existing_readme(repo)
+    readme = existing_readme(
+        repo
+    )
 
     # --------------------------------------------------------
     # 5
@@ -1501,12 +2322,23 @@ def main():
         readme,
     )
 
+    evidence = build_evidence_json(
+        repo,
+        files,
+        analysis,
+        technologies,
+        deps,
+        env_vars,
+        capabilities,
+        readme,
+    )
+
     # --------------------------------------------------------
     # 6
     # --------------------------------------------------------
 
     print(
-        "[6/6] Guardando..."
+        "[6/6] Guardando evidencia..."
     )
 
     output_dir = (
@@ -1517,90 +2349,128 @@ def main():
         exist_ok=True
     )
 
-    output_file = (
-        output_dir /
-        "README_CONTEXT_ULTRA.md"
+    context_file = (
+        output_dir
+        / "README_CONTEXT_ULTRA.md"
+    )
+
+    evidence_file = (
+        output_dir
+        / "README_EVIDENCE.json"
     )
 
     analysis_file = (
-        output_dir /
-        "repository_analysis.json"
+        output_dir
+        / "repository_analysis.json"
     )
 
-    output_file.write_text(
+    context_file.write_text(
         context,
-        encoding="utf-8"
+        encoding="utf-8",
+    )
+
+    evidence_file.write_text(
+        json.dumps(
+            evidence,
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
     )
 
     analysis_file.write_text(
         json.dumps(
             {
                 "repository": repo.name,
-                "generated_at":
-                    datetime.now().isoformat(),
-                "files": files,
+                "generated_at": (
+                    datetime.now().isoformat()
+                ),
                 "analysis": analysis,
-                "technologies":
-                    dict(technologies),
-                "dependencies": deps,
-                "environment_variables":
-                    env_vars,
-                "capabilities":
-                    capabilities,
             },
             indent=2,
-            ensure_ascii=False
+            ensure_ascii=False,
         ),
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     chars = len(context)
 
-    tokens = chars // 4
+    # --------------------------------------------------------
+    # RESUMEN
+    # --------------------------------------------------------
 
-    print("")
+    print()
     print("=" * 70)
     print(
-        " CONTEXTO COMPACTO GENERADO"
+        " EVIDENCIA GENERADA"
     )
     print("=" * 70)
-    print("")
+    print()
 
     print(
-        f"Archivo: {output_file}"
+        f"Archivos             : {len(files):,}"
     )
 
     print(
-        f"Caracteres: {chars:,}"
+        f"Tecnologías          : {len(technologies):,}"
     )
 
     print(
-        f"Tokens estimados: {tokens:,}"
+        f"Variables entorno    : {len(env_vars):,}"
     )
 
-    print("")
+    print(
+        f"Endpoints             : "
+        f"{len(evidence['api']):,}"
+    )
 
-    if 2500 <= tokens <= 3500:
+    print(
+        f"Tablas detectadas    : "
+        f"{len(evidence['database_tables']):,}"
+    )
 
-        print(
-            "OK: contexto dentro del rango objetivo."
-        )
+    print(
+        f"Señales funcionales  : "
+        f"{len(capabilities):,}"
+    )
 
-    elif tokens < 2500:
+    print()
 
-        print(
-            "AVISO: contexto menor al objetivo."
-        )
+    print(
+        f"Contexto:"
+        f"\n  {context_file}"
+    )
 
-    else:
+    print()
 
-        print(
-            "AVISO: contexto mayor al objetivo."
-        )
+    print(
+        f"Evidencia:"
+        f"\n  {evidence_file}"
+    )
 
-    print("")
+    print()
+
+    print(
+        f"Análisis:"
+        f"\n  {analysis_file}"
+    )
+
+    print()
+
+    print(
+        f"Contexto: {chars:,} caracteres"
+    )
+
+    print(
+        f"Tokens estimados: {chars // 4:,}"
+    )
+
+    print()
+    print(
+        "README3 terminado correctamente."
+    )
+    print()
 
 
 if __name__ == "__main__":
     main()
-
