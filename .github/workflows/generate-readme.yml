@@ -1,12 +1,11 @@
 name: Generate README
 
-'on':
+on:
   workflow_call:
 
 jobs:
-
-  test:
-    name: Test AI README
+  generate-readme:
+    name: Generate and update README
     runs-on: ubuntu-latest
 
     permissions:
@@ -22,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: target
+          fetch-depth: 0
 
       # --------------------------------------------------
       # 2. Descargar el repositorio maestro
@@ -52,20 +52,48 @@ jobs:
           pip install requests
 
       # --------------------------------------------------
-      # 5. Verificar archivos
+      # 5. Verificar repositorios
       # --------------------------------------------------
 
-      - name: Verify files
+      - name: Verify repositories
         run: |
-          echo "=== TARGET REPOSITORY ==="
+          echo "======================================"
+          echo "TARGET REPOSITORY"
+          echo "======================================"
           ls -la target
 
           echo ""
-          echo "=== AI README ==="
+          echo "======================================"
+          echo "AI README REPOSITORY"
+          echo "======================================"
           ls -la ai-readme
 
       # --------------------------------------------------
-      # 6. Verificar Python
+      # 6. Verificar archivos del sistema AI README
+      # --------------------------------------------------
+
+      - name: Verify AI README files
+        run: |
+          echo "======================================"
+          echo "PYTHON FILES"
+          echo "======================================"
+
+          ls -la ai-readme/*.py
+
+          echo ""
+          echo "======================================"
+          echo "API CONFIGURATION"
+          echo "======================================"
+
+          if [ ! -f "ai-readme/api.json" ]; then
+            echo "ERROR: No existe ai-readme/api.json"
+            exit 1
+          fi
+
+          echo "api.json encontrado."
+
+      # --------------------------------------------------
+      # 7. Verificar Python
       # --------------------------------------------------
 
       - name: Verify Python
@@ -73,44 +101,120 @@ jobs:
           python --version
 
       # --------------------------------------------------
-      # 7. Verificar readme3.py
+      # 8. Verificar sintaxis de los scripts
       # --------------------------------------------------
 
-      - name: Verify readme3.py
+      - name: Verify scripts
         run: |
           python -m py_compile ai-readme/readme3.py
-
-      # --------------------------------------------------
-      # 8. Verificar makeReadme.py
-      # --------------------------------------------------
-
-      - name: Verify makeReadme.py
-        run: |
           python -m py_compile ai-readme/makeReadme.py
 
-      # --------------------------------------------------
-      # 9. Ejecutar readme3.py
-      # --------------------------------------------------
-
-      - name: Generate ultra context
-        run: |
-          python ai-readme/readme3.py target
+          echo "Scripts Python válidos."
 
       # --------------------------------------------------
-      # 10. Mostrar resultado
+      # 9. Generar README
       # --------------------------------------------------
 
-      - name: Show generated context
-        run: |
-          echo "=== GENERATED CONTEXT ==="
-          find target/readme_context -maxdepth 2 -type f -print
-
-      # --------------------------------------------------
-      # 11. Éxito
-      # --------------------------------------------------
-
-      - name: Success
+      - name: Generate README
         run: |
           echo "======================================"
-          echo "AI README workflow OK"
+          echo "GENERANDO README"
+          echo "======================================"
+
+          python ai-readme/makeReadme.py target
+
+      # --------------------------------------------------
+      # 10. Verificar README generado
+      # --------------------------------------------------
+
+      - name: Verify generated README
+        run: |
+          echo "======================================"
+          echo "VERIFICANDO README"
+          echo "======================================"
+
+          if [ ! -f "target/README.md" ]; then
+            echo "ERROR: makeReadme.py no generó README.md"
+            exit 1
+          fi
+
+          echo "README.md generado correctamente."
+
+          echo ""
+          echo "Tamaño:"
+          wc -c target/README.md
+
+          echo ""
+          echo "Primeras 80 líneas:"
+          head -80 target/README.md
+
+      # --------------------------------------------------
+      # 11. Verificar contexto generado
+      # --------------------------------------------------
+
+      - name: Verify README context
+        run: |
+          echo "======================================"
+          echo "README CONTEXT"
+          echo "======================================"
+
+          if [ -d "target/readme_context" ]; then
+            find target/readme_context -maxdepth 2 -type f -print
+          else
+            echo "ADVERTENCIA: no existe readme_context/"
+          fi
+
+      # --------------------------------------------------
+      # 12. Mostrar estado Git
+      # --------------------------------------------------
+
+      - name: Show Git status
+        run: |
+          cd target
+
+          echo "======================================"
+          echo "GIT STATUS"
+          echo "======================================"
+
+          git status --short
+
+      # --------------------------------------------------
+      # 13. Mostrar cambios del README
+      # --------------------------------------------------
+
+      - name: Show README diff
+        run: |
+          cd target
+
+          echo "======================================"
+          echo "README DIFF"
+          echo "======================================"
+
+          git diff -- README.md
+
+      # --------------------------------------------------
+      # 14. Commit y push
+      # --------------------------------------------------
+
+      - name: Commit and push README
+        run: |
+          cd target
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- README.md; then
+            echo "README.md no tiene cambios."
+            exit 0
+          fi
+
+          git add README.md
+
+          git commit -m "docs: update README automatically"
+
+          git push
+
+          echo ""
+          echo "======================================"
+          echo "README ACTUALIZADO CORRECTAMENTE"
           echo "======================================"
