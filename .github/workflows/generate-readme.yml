@@ -14,33 +14,103 @@ jobs:
 
     steps:
 
-      - name: Checkout repository
+      # --------------------------------------------------
+      # 1. Descargar el repositorio que llama
+      # --------------------------------------------------
+
+      - name: Checkout target repository
         uses: actions/checkout@v4
+        with:
+          path: target
+
+      # --------------------------------------------------
+      # 2. Descargar el repositorio maestro
+      # --------------------------------------------------
+
+      - name: Checkout AI README
+        uses: actions/checkout@v4
+        with:
+          repository: Sud-Austral/coipo_aireadme
+          path: ai-readme
+
+      # --------------------------------------------------
+      # 3. Configurar Python
+      # --------------------------------------------------
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      # --------------------------------------------------
+      # 4. Instalar dependencias
+      # --------------------------------------------------
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests
 
+      # --------------------------------------------------
+      # 5. Verificar archivos
+      # --------------------------------------------------
+
+      - name: Verify files
+        run: |
+          echo "=== TARGET REPOSITORY ==="
+          ls -la target
+
+          echo ""
+          echo "=== AI README ==="
+          ls -la ai-readme
+
+      # --------------------------------------------------
+      # 6. Verificar Python
+      # --------------------------------------------------
+
       - name: Verify Python
         run: |
           python --version
 
+      # --------------------------------------------------
+      # 7. Verificar readme3.py
+      # --------------------------------------------------
+
       - name: Verify readme3.py
         run: |
-          python -m py_compile readme3.py
+          python -m py_compile ai-readme/readme3.py
+
+      # --------------------------------------------------
+      # 8. Verificar makeReadme.py
+      # --------------------------------------------------
 
       - name: Verify makeReadme.py
         run: |
-          python -m py_compile makeReadme.py
+          python -m py_compile ai-readme/makeReadme.py
+
+      # --------------------------------------------------
+      # 9. Ejecutar readme3.py
+      # --------------------------------------------------
+
+      - name: Generate ultra context
+        run: |
+          python ai-readme/readme3.py target
+
+      # --------------------------------------------------
+      # 10. Mostrar resultado
+      # --------------------------------------------------
+
+      - name: Show generated context
+        run: |
+          echo "=== GENERATED CONTEXT ==="
+          find target/readme_context -maxdepth 2 -type f -print
+
+      # --------------------------------------------------
+      # 11. Éxito
+      # --------------------------------------------------
 
       - name: Success
         run: |
           echo "======================================"
-          echo "AI README reusable workflow OK"
+          echo "AI README workflow OK"
           echo "======================================"
