@@ -10,7 +10,6 @@ jobs:
 
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
 
@@ -194,146 +193,28 @@ jobs:
           git diff -- README.md
 
       # --------------------------------------------------
-      # 14. Crear Pull Request
+      # 14. Commit y push
       # --------------------------------------------------
 
-      - name: Create README Pull Request
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Commit and push README
         run: |
           cd target
 
-          echo "======================================"
-          echo "PREPARANDO PULL REQUEST"
-          echo "======================================"
-
-          # -----------------------------------------------
-          # Verificar si README cambió
-          # -----------------------------------------------
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if git diff --quiet -- README.md; then
             echo "README.md no tiene cambios."
             exit 0
           fi
 
-          # -----------------------------------------------
-          # Obtener rama base
-          # -----------------------------------------------
-
-          BASE_BRANCH="${GITHUB_REF_NAME}"
-          UPDATE_BRANCH="ai-readme/update-readme"
-
-          echo "Rama base: $BASE_BRANCH"
-          echo "Rama actualización: $UPDATE_BRANCH"
-
-          # -----------------------------------------------
-          # Configurar Git
-          # -----------------------------------------------
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # -----------------------------------------------
-          # Crear rama de actualización desde la base
-          # -----------------------------------------------
-
-          git checkout -b "$UPDATE_BRANCH"
-
-          # -----------------------------------------------
-          # Agregar README
-          # -----------------------------------------------
-
           git add README.md
-
-          # -----------------------------------------------
-          # Crear commit
-          # -----------------------------------------------
 
           git commit -m "docs: update README automatically"
 
-          # -----------------------------------------------
-          # Push de la rama de actualización
-          # -----------------------------------------------
-
-          git push origin "$UPDATE_BRANCH" --force
+          git push
 
           echo ""
-          echo "Rama de actualización enviada correctamente."
-
-          # -----------------------------------------------
-          # Buscar PR existente
-          # -----------------------------------------------
-
-          PR_NUMBER=$(gh pr list \
-            --repo "$GITHUB_REPOSITORY" \
-            --head "$UPDATE_BRANCH" \
-            --base "$BASE_BRANCH" \
-            --state open \
-            --json number \
-            --jq '.[0].number')
-
-          # -----------------------------------------------
-          # Si ya existe PR
-          # -----------------------------------------------
-
-          if [ -n "$PR_NUMBER" ]; then
-
-            echo ""
-            echo "======================================"
-            echo "PR YA EXISTENTE"
-            echo "======================================"
-
-            echo "Pull Request #$PR_NUMBER ya existe."
-            echo "La rama fue actualizada."
-
-          else
-
-            # -------------------------------------------
-            # Crear nuevo PR
-            # -------------------------------------------
-
-            echo ""
-            echo "======================================"
-            echo "CREANDO PULL REQUEST"
-            echo "======================================"
-
-            gh pr create \
-              --repo "$GITHUB_REPOSITORY" \
-              --base "$BASE_BRANCH" \
-              --head "$UPDATE_BRANCH" \
-              --title "docs: actualización automática del README" \
-              --body "$(cat <<'EOF'
-## README generado automáticamente
-
-Este Pull Request fue generado automáticamente por el sistema AI README.
-
-### Qué se hizo
-
-- Analizó la estructura actual del repositorio.
-- Generó una nueva versión de `README.md`.
-- Comparó los cambios contra la versión existente.
-- Publicó los cambios en una rama independiente.
-- Abrió este Pull Request para revisión.
-
-### Importante
-
-Este workflow **no modifica directamente la rama principal**.
-
-El cambio debe ser revisado y aprobado antes de realizar el merge.
-
-### Archivo modificado
-
-- `README.md`
-
----
-
-🤖 Generado automáticamente por AI README
-EOF
-            )"
-
-            echo ""
-            echo "======================================"
-            echo "PULL REQUEST CREADO"
-            echo "======================================"
-
-          fi
+          echo "======================================"
+          echo "README ACTUALIZADO CORRECTAMENTE"
+          echo "======================================"
