@@ -1,0 +1,420 @@
+{
+  "repository": "target",
+  "generated_at": "2026-08-31T02:06:06.906484",
+  "analysis": {
+    "readme3_analyzers.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "ast",
+            "line": 3
+          },
+          {
+            "value": "json",
+            "line": 4
+          },
+          {
+            "value": "re",
+            "line": 5
+          },
+          {
+            "value": "pathlib",
+            "line": 6
+          },
+          {
+            "value": "readme3_scanner",
+            "line": 8
+          }
+        ],
+        "functions": [
+          {
+            "name": "analyze_python",
+            "line": 43
+          },
+          {
+            "name": "analyze_js",
+            "line": 182
+          },
+          {
+            "name": "analyze_sql",
+            "line": 372
+          },
+          {
+            "name": "analyze_package_json",
+            "line": 440
+          },
+          {
+            "name": "analyze_requirements",
+            "line": 501
+          },
+          {
+            "name": "detect_technologies",
+            "line": 616
+          },
+          {
+            "name": "dependencies",
+            "line": 705
+          },
+          {
+            "name": "analyze_files",
+            "line": 759
+          },
+          {
+            "name": "detect_env_vars",
+            "line": 814
+          },
+          {
+            "name": "detect_capabilities",
+            "line": 932
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "readme3_evidence.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "collections",
+            "line": 3
+          },
+          {
+            "value": "datetime",
+            "line": 4
+          },
+          {
+            "value": "pathlib",
+            "line": 5
+          },
+          {
+            "value": "readme3_scanner",
+            "line": 7
+          },
+          {
+            "value": "readme3_analyzers",
+            "line": 16
+          }
+        ],
+        "functions": [
+          {
+            "name": "existing_readme",
+            "line": 44
+          },
+          {
+            "name": "summarize_existing_readme",
+            "line": 64
+          },
+          {
+            "name": "important_files",
+            "line": 135
+          },
+          {
+            "name": "structure",
+            "line": 190
+          },
+          {
+            "name": "collect_api",
+            "line": 212
+          },
+          {
+            "name": "collect_tables",
+            "line": 280
+          },
+          {
+            "name": "generate_context",
+            "line": 319
+          },
+          {
+            "name": "build_evidence_json",
+            "line": 863
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "readme3_scanner.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "os",
+            "line": 3
+          },
+          {
+            "value": "pathlib",
+            "line": 4
+          }
+        ],
+        "functions": [
+          {
+            "name": "read_text",
+            "line": 130
+          },
+          {
+            "name": "rel_path",
+            "line": 142
+          },
+          {
+            "name": "language",
+            "line": 148
+          },
+          {
+            "name": "add_unique",
+            "line": 196
+          },
+          {
+            "name": "evidence_item",
+            "line": 203
+          },
+          {
+            "name": "line_number",
+            "line": 227
+          },
+          {
+            "name": "scan",
+            "line": 241
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "readme3.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "json",
+            "line": 3
+          },
+          {
+            "value": "sys",
+            "line": 4
+          },
+          {
+            "value": "datetime",
+            "line": 5
+          },
+          {
+            "value": "pathlib",
+            "line": 6
+          },
+          {
+            "value": "readme3_scanner",
+            "line": 56
+          },
+          {
+            "value": "readme3_analyzers",
+            "line": 58
+          },
+          {
+            "value": "readme3_evidence",
+            "line": 66
+          }
+        ],
+        "functions": [
+          {
+            "name": "main",
+            "line": 77
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "validate_readme.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "json",
+            "line": 3
+          },
+          {
+            "value": "re",
+            "line": 4
+          },
+          {
+            "value": "sys",
+            "line": 5
+          },
+          {
+            "value": "pathlib",
+            "line": 6
+          }
+        ],
+        "functions": [
+          {
+            "name": "load_json",
+            "line": 73
+          },
+          {
+            "name": "get_evidence_environment_variables",
+            "line": 96
+          },
+          {
+            "name": "get_evidence_endpoints",
+            "line": 125
+          },
+          {
+            "name": "get_evidence_technologies",
+            "line": 159
+          },
+          {
+            "name": "get_evidence_tables",
+            "line": 191
+          },
+          {
+            "name": "get_evidence_commands",
+            "line": 223
+          },
+          {
+            "name": "extract_env_variables",
+            "line": 300
+          },
+          {
+            "name": "extract_endpoints",
+            "line": 349
+          },
+          {
+            "name": "extract_technologies",
+            "line": 385
+          },
+          {
+            "name": "extract_table_mentions",
+            "line": 435
+          },
+          {
+            "name": "extract_commands",
+            "line": 474
+          },
+          {
+            "name": "validate",
+            "line": 509
+          },
+          {
+            "name": "main",
+            "line": 768
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "makeReadme.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "json",
+            "line": 1
+          },
+          {
+            "value": "subprocess",
+            "line": 2
+          },
+          {
+            "value": "sys",
+            "line": 3
+          },
+          {
+            "value": "pathlib",
+            "line": 4
+          },
+          {
+            "value": "requests",
+            "line": 6
+          }
+        ],
+        "functions": [
+          {
+            "name": "error",
+            "line": 39
+          },
+          {
+            "name": "run_command",
+            "line": 48
+          },
+          {
+            "name": "load_api",
+            "line": 77
+          },
+          {
+            "name": "run_readme3",
+            "line": 129
+          },
+          {
+            "name": "get_context_files",
+            "line": 162
+          },
+          {
+            "name": "get_existing_readme",
+            "line": 200
+          },
+          {
+            "name": "limit_context",
+            "line": 236
+          },
+          {
+            "name": "create_generation_prompt",
+            "line": 252
+          },
+          {
+            "name": "call_zai",
+            "line": 432
+          },
+          {
+            "name": "clean_response",
+            "line": 554
+          },
+          {
+            "name": "save_candidate",
+            "line": 595
+          },
+          {
+            "name": "validate_readme",
+            "line": 627
+          },
+          {
+            "name": "create_repair_prompt",
+            "line": 668
+          },
+          {
+            "name": "save_final",
+            "line": 757
+          },
+          {
+            "name": "main",
+            "line": 788
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    }
+  }
+}

@@ -1,0 +1,1317 @@
+{
+  "metadata": {
+    "repository": "target",
+    "generated_at": "2026-08-31T02:06:06.905149",
+    "analyzer": "readme3",
+    "version": "2.0-evidence-first",
+    "file_count": 13
+  },
+  "policy": {
+    "purpose": "Repository evidence extraction for documentation generation.",
+    "important_rule": "Signals do not automatically represent confirmed product capabilities."
+  },
+  "files": [
+    {
+      "path": "readme3_analyzers.py",
+      "name": "readme3_analyzers.py",
+      "ext": ".py",
+      "language": "Python",
+      "size": 21170,
+      "text": true,
+      "important": false
+    },
+    {
+      "path": ".gitignore",
+      "name": ".gitignore",
+      "ext": "",
+      "language": "Other",
+      "size": 34,
+      "text": false,
+      "important": false
+    },
+    {
+      "path": "readme3_evidence.py",
+      "name": "readme3_evidence.py",
+      "ext": ".py",
+      "language": "Python",
+      "size": 18588,
+      "text": true,
+      "important": false
+    },
+    {
+      "path": "api.json",
+      "name": "api.json",
+      "ext": ".json",
+      "language": "JSON",
+      "size": 99,
+      "text": true,
+      "important": false
+    },
+    {
+      "path": ".gitattributes",
+      "name": ".gitattributes",
+      "ext": "",
+      "language": "Other",
+      "size": 66,
+      "text": false,
+      "important": false
+    },
+    {
+      "path": "readme3_scanner.py",
+      "name": "readme3_scanner.py",
+      "ext": ".py",
+      "language": "Python",
+      "size": 5922,
+      "text": true,
+      "important": false
+    },
+    {
+      "path": "README.md",
+      "name": "README.md",
+      "ext": ".md",
+      "language": "Markdown",
+      "size": 18,
+      "text": true,
+      "important": true
+    },
+    {
+      "path": "readme3.py",
+      "name": "readme3.py",
+      "ext": ".py",
+      "language": "Python",
+      "size": 7636,
+      "text": true,
+      "important": false
+    },
+    {
+      "path": "validate_readme.py",
+      "name": "validate_readme.py",
+      "ext": ".py",
+      "language": "Python",
+      "size": 17730,
+      "text": true,
+      "important": false
+    },
+    {
+      "path": "makeReadme.py",
+      "name": "makeReadme.py",
+      "ext": ".py",
+      "language": "Python",
+      "size": 19601,
+      "text": true,
+      "important": false
+    },
+    {
+      "path": ".github/workflows/generate-readme.yml",
+      "name": "generate-readme.yml",
+      "ext": ".yml",
+      "language": "YAML",
+      "size": 13872,
+      "text": true,
+      "important": false
+    },
+    {
+      "path": ".github/workflows/generate-readme",
+      "name": "generate-readme",
+      "ext": "",
+      "language": "Other",
+      "size": 6471,
+      "text": false,
+      "important": false
+    },
+    {
+      "path": ".github/workflows/readme.yml",
+      "name": "readme.yml",
+      "ext": ".yml",
+      "language": "YAML",
+      "size": 221,
+      "text": true,
+      "important": false
+    }
+  ],
+  "structure": {
+    "readme3_analyzers.py": 1,
+    ".gitignore": 1,
+    "readme3_evidence.py": 1,
+    "api.json": 1,
+    ".gitattributes": 1,
+    "readme3_scanner.py": 1,
+    "README.md": 1,
+    "readme3.py": 1,
+    "validate_readme.py": 1,
+    "makeReadme.py": 1,
+    ".github": 3
+  },
+  "important_files": [
+    "README.md",
+    ".github/workflows/generate-readme",
+    ".github/workflows/generate-readme.yml",
+    ".github/workflows/readme.yml",
+    "api.json"
+  ],
+  "technologies": {
+    "React": {
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 253,
+          "weight": 1,
+          "pattern": "\\breact\\b"
+        },
+        {
+          "file": "readme3_scanner.py",
+          "line": 154,
+          "weight": 1,
+          "pattern": "\\breact\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 402,
+          "weight": 1,
+          "pattern": "\\breact\\b"
+        }
+      ]
+    },
+    "Vite": {
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 345,
+          "weight": 1,
+          "pattern": "\\bvite\\b"
+        },
+        {
+          "file": "readme3_evidence.py",
+          "line": 112,
+          "weight": 1,
+          "pattern": "\\bvite\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 403,
+          "weight": 1,
+          "pattern": "\\bvite\\b"
+        }
+      ]
+    },
+    "Vue": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 547,
+          "weight": 1,
+          "pattern": "\\bvue\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 416,
+          "weight": 1,
+          "pattern": "\\bvue\\b"
+        }
+      ]
+    },
+    "Angular": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 551,
+          "weight": 1,
+          "pattern": "@angular/"
+        }
+      ]
+    },
+    "Flask": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 114,
+          "weight": 1,
+          "pattern": "\\bflask\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 400,
+          "weight": 1,
+          "pattern": "\\bflask\\b"
+        }
+      ]
+    },
+    "FastAPI": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 114,
+          "weight": 1,
+          "pattern": "\\bfastapi\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 399,
+          "weight": 1,
+          "pattern": "\\bfastapi\\b"
+        }
+      ]
+    },
+    "Django": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 559,
+          "weight": 1,
+          "pattern": "\\bdjango\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 401,
+          "weight": 1,
+          "pattern": "\\bdjango\\b"
+        }
+      ]
+    },
+    "Express": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 562,
+          "weight": 1,
+          "pattern": "\\bexpress\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 404,
+          "weight": 1,
+          "pattern": "\\bexpress\\b"
+        }
+      ]
+    },
+    "Node.js": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 65,
+          "weight": 1,
+          "pattern": "\\bnode\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 405,
+          "weight": 1,
+          "pattern": "\\bnode\\b"
+        }
+      ]
+    },
+    "PostgreSQL": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 568,
+          "weight": 1,
+          "pattern": "\\bpostgresql\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 395,
+          "weight": 1,
+          "pattern": "\\bpostgresql\\b"
+        }
+      ]
+    },
+    "MySQL": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 572,
+          "weight": 1,
+          "pattern": "\\bmysql\\b"
+        }
+      ]
+    },
+    "SQLite": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 575,
+          "weight": 1,
+          "pattern": "\\bsqlite\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 397,
+          "weight": 1,
+          "pattern": "\\bsqlite\\b"
+        }
+      ]
+    },
+    "MongoDB": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 578,
+          "weight": 1,
+          "pattern": "\\bmongodb\\b"
+        }
+      ]
+    },
+    "Redis": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 582,
+          "weight": 1,
+          "pattern": "\\bredis\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 398,
+          "weight": 1,
+          "pattern": "\\bredis\\b"
+        }
+      ]
+    },
+    "Docker": {
+      "confidence": "medium",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 585,
+          "weight": 1,
+          "pattern": "\\bdocker\\b"
+        },
+        {
+          "file": "readme3_evidence.py",
+          "line": 106,
+          "weight": 1,
+          "pattern": "\\bdocker\\b"
+        },
+        {
+          "file": "readme3_scanner.py",
+          "line": 117,
+          "weight": 1,
+          "pattern": "\\bdocker\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 415,
+          "weight": 1,
+          "pattern": "\\bdocker\\b"
+        }
+      ]
+    },
+    "Leaflet": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 588,
+          "weight": 1,
+          "pattern": "\\bleaflet\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 407,
+          "weight": 1,
+          "pattern": "\\bleaflet\\b"
+        }
+      ]
+    },
+    "Mapbox": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 591,
+          "weight": 1,
+          "pattern": "\\bmapbox\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 408,
+          "weight": 1,
+          "pattern": "\\bmapbox\\b"
+        }
+      ]
+    },
+    "Tailwind": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 594,
+          "weight": 1,
+          "pattern": "\\btailwind\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 409,
+          "weight": 1,
+          "pattern": "\\btailwind\\b"
+        }
+      ]
+    },
+    "Pandas": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 597,
+          "weight": 1,
+          "pattern": "\\bpandas\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 410,
+          "weight": 1,
+          "pattern": "\\bpandas\\b"
+        }
+      ]
+    },
+    "NumPy": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 600,
+          "weight": 1,
+          "pattern": "\\bnumpy\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 411,
+          "weight": 1,
+          "pattern": "\\bnumpy\\b"
+        }
+      ]
+    },
+    "OpenCV": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 603,
+          "weight": 1,
+          "pattern": "\\bopencv\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 412,
+          "weight": 1,
+          "pattern": "\\bopencv\\b"
+        }
+      ]
+    },
+    "YOLO": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 607,
+          "weight": 1,
+          "pattern": "\\byolo\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 413,
+          "weight": 1,
+          "pattern": "\\byolo\\b"
+        }
+      ]
+    },
+    "SQLAlchemy": {
+      "confidence": "low",
+      "evidence": [
+        {
+          "file": "readme3_analyzers.py",
+          "line": 610,
+          "weight": 1,
+          "pattern": "\\bsqlalchemy\\b"
+        },
+        {
+          "file": "validate_readme.py",
+          "line": 414,
+          "weight": 1,
+          "pattern": "\\bsqlalchemy\\b"
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "npm": [],
+    "python": []
+  },
+  "environment_variables": [],
+  "api": [],
+  "database_tables": [],
+  "capability_signals": {
+    "Autenticación": {
+      "confidence": "medium",
+      "signals": [
+        {
+          "keyword": "login",
+          "file": "readme3_analyzers.py",
+          "line": 883
+        },
+        {
+          "keyword": "logout",
+          "file": "readme3_analyzers.py",
+          "line": 884
+        },
+        {
+          "keyword": "auth",
+          "file": "readme3_analyzers.py",
+          "line": 885
+        },
+        {
+          "keyword": "jwt",
+          "file": "readme3_analyzers.py",
+          "line": 886
+        },
+        {
+          "keyword": "token",
+          "file": "readme3_analyzers.py",
+          "line": 887
+        },
+        {
+          "keyword": "authenticate",
+          "file": "readme3_analyzers.py",
+          "line": 888
+        },
+        {
+          "keyword": "login",
+          "file": "readme3_evidence.py",
+          "line": 128
+        },
+        {
+          "keyword": "auth",
+          "file": "readme3_evidence.py",
+          "line": 127
+        },
+        {
+          "keyword": "token",
+          "file": "readme3_evidence.py",
+          "line": 796
+        },
+        {
+          "keyword": "token",
+          "file": "readme3.py",
+          "line": 380
+        },
+        {
+          "keyword": "auth",
+          "file": "makeReadme.py",
+          "line": 456
+        },
+        {
+          "keyword": "auth",
+          "file": ".github/workflows/generate-readme.yml",
+          "line": 445
+        },
+        {
+          "keyword": "token",
+          "file": ".github/workflows/generate-readme.yml",
+          "line": 399
+        }
+      ]
+    },
+    "Mapas / cartografía": {
+      "confidence": "low",
+      "signals": [
+        {
+          "keyword": "leaflet",
+          "file": "readme3_analyzers.py",
+          "line": 588
+        },
+        {
+          "keyword": "mapbox",
+          "file": "readme3_analyzers.py",
+          "line": 591
+        },
+        {
+          "keyword": "cartografia",
+          "file": "readme3_analyzers.py",
+          "line": 893
+        },
+        {
+          "keyword": "mapa",
+          "file": "readme3_analyzers.py",
+          "line": 890
+        },
+        {
+          "keyword": "leaflet",
+          "file": "validate_readme.py",
+          "line": 407
+        },
+        {
+          "keyword": "mapbox",
+          "file": "validate_readme.py",
+          "line": 408
+        }
+      ]
+    },
+    "Exportación": {
+      "confidence": "low",
+      "signals": [
+        {
+          "keyword": "export",
+          "file": "readme3_analyzers.py",
+          "line": 193
+        },
+        {
+          "keyword": "exportar",
+          "file": "readme3_analyzers.py",
+          "line": 898
+        },
+        {
+          "keyword": "csv",
+          "file": "readme3_analyzers.py",
+          "line": 899
+        },
+        {
+          "keyword": "xlsx",
+          "file": "readme3_analyzers.py",
+          "line": 900
+        },
+        {
+          "keyword": "excel",
+          "file": "readme3_analyzers.py",
+          "line": 901
+        }
+      ]
+    },
+    "Carga de archivos": {
+      "confidence": "medium",
+      "signals": [
+        {
+          "keyword": "upload",
+          "file": "readme3_analyzers.py",
+          "line": 904
+        },
+        {
+          "keyword": "archivo",
+          "file": "readme3_analyzers.py",
+          "line": 756
+        },
+        {
+          "keyword": "file",
+          "file": "readme3_analyzers.py",
+          "line": 9
+        },
+        {
+          "keyword": "document",
+          "file": "readme3_analyzers.py",
+          "line": 907
+        },
+        {
+          "keyword": "archivo",
+          "file": "readme3_evidence.py",
+          "line": 26
+        },
+        {
+          "keyword": "file",
+          "file": "readme3_evidence.py",
+          "line": 8
+        },
+        {
+          "keyword": "document",
+          "file": "readme3_evidence.py",
+          "line": 886
+        },
+        {
+          "keyword": "archivo",
+          "file": "readme3_scanner.py",
+          "line": 13
+        },
+        {
+          "keyword": "file",
+          "file": "readme3_scanner.py",
+          "line": 50
+        },
+        {
+          "keyword": "archivo",
+          "file": "readme3.py",
+          "line": 14
+        },
+        {
+          "keyword": "file",
+          "file": "readme3.py",
+          "line": 59
+        },
+        {
+          "keyword": "file",
+          "file": "validate_readme.py",
+          "line": 784
+        },
+        {
+          "keyword": "document",
+          "file": "validate_readme.py",
+          "line": 13
+        },
+        {
+          "keyword": "archivo",
+          "file": "makeReadme.py",
+          "line": 293
+        },
+        {
+          "keyword": "file",
+          "file": "makeReadme.py",
+          "line": 13
+        },
+        {
+          "keyword": "document",
+          "file": "makeReadme.py",
+          "line": 263
+        },
+        {
+          "keyword": "archivo",
+          "file": ".github/workflows/generate-readme.yml",
+          "line": 76
+        },
+        {
+          "keyword": "file",
+          "file": ".github/workflows/generate-readme.yml",
+          "line": 79
+        }
+      ]
+    },
+    "Reportes / analítica": {
+      "confidence": "low",
+      "signals": [
+        {
+          "keyword": "report",
+          "file": "readme3_analyzers.py",
+          "line": 909
+        },
+        {
+          "keyword": "reporte",
+          "file": "readme3_analyzers.py",
+          "line": 909
+        },
+        {
+          "keyword": "dashboard",
+          "file": "readme3_analyzers.py",
+          "line": 912
+        },
+        {
+          "keyword": "analytics",
+          "file": "readme3_analyzers.py",
+          "line": 913
+        },
+        {
+          "keyword": "estadistica",
+          "file": "readme3_analyzers.py",
+          "line": 914
+        }
+      ]
+    },
+    "Procesamiento de datos": {
+      "confidence": "medium",
+      "signals": [
+        {
+          "keyword": "pandas",
+          "file": "readme3_analyzers.py",
+          "line": 597
+        },
+        {
+          "keyword": "numpy",
+          "file": "readme3_analyzers.py",
+          "line": 600
+        },
+        {
+          "keyword": "dataframe",
+          "file": "readme3_analyzers.py",
+          "line": 919
+        },
+        {
+          "keyword": "etl",
+          "file": "readme3_analyzers.py",
+          "line": 920
+        },
+        {
+          "keyword": "etl",
+          "file": "readme3_evidence.py",
+          "line": 806
+        },
+        {
+          "keyword": "pandas",
+          "file": "validate_readme.py",
+          "line": 410
+        },
+        {
+          "keyword": "numpy",
+          "file": "validate_readme.py",
+          "line": 411
+        }
+      ]
+    },
+    "IA / Machine Learning": {
+      "confidence": "low",
+      "signals": [
+        {
+          "keyword": "tensorflow",
+          "file": "readme3_analyzers.py",
+          "line": 923
+        },
+        {
+          "keyword": "pytorch",
+          "file": "readme3_analyzers.py",
+          "line": 924
+        },
+        {
+          "keyword": "torch",
+          "file": "readme3_analyzers.py",
+          "line": 924
+        },
+        {
+          "keyword": "yolo",
+          "file": "readme3_analyzers.py",
+          "line": 607
+        },
+        {
+          "keyword": "machine learning",
+          "file": "readme3_analyzers.py",
+          "line": 922
+        },
+        {
+          "keyword": "yolo",
+          "file": "validate_readme.py",
+          "line": 413
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "readme3_analyzers.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "ast",
+            "line": 3
+          },
+          {
+            "value": "json",
+            "line": 4
+          },
+          {
+            "value": "re",
+            "line": 5
+          },
+          {
+            "value": "pathlib",
+            "line": 6
+          },
+          {
+            "value": "readme3_scanner",
+            "line": 8
+          }
+        ],
+        "functions": [
+          {
+            "name": "analyze_python",
+            "line": 43
+          },
+          {
+            "name": "analyze_js",
+            "line": 182
+          },
+          {
+            "name": "analyze_sql",
+            "line": 372
+          },
+          {
+            "name": "analyze_package_json",
+            "line": 440
+          },
+          {
+            "name": "analyze_requirements",
+            "line": 501
+          },
+          {
+            "name": "detect_technologies",
+            "line": 616
+          },
+          {
+            "name": "dependencies",
+            "line": 705
+          },
+          {
+            "name": "analyze_files",
+            "line": 759
+          },
+          {
+            "name": "detect_env_vars",
+            "line": 814
+          },
+          {
+            "name": "detect_capabilities",
+            "line": 932
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "readme3_evidence.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "collections",
+            "line": 3
+          },
+          {
+            "value": "datetime",
+            "line": 4
+          },
+          {
+            "value": "pathlib",
+            "line": 5
+          },
+          {
+            "value": "readme3_scanner",
+            "line": 7
+          },
+          {
+            "value": "readme3_analyzers",
+            "line": 16
+          }
+        ],
+        "functions": [
+          {
+            "name": "existing_readme",
+            "line": 44
+          },
+          {
+            "name": "summarize_existing_readme",
+            "line": 64
+          },
+          {
+            "name": "important_files",
+            "line": 135
+          },
+          {
+            "name": "structure",
+            "line": 190
+          },
+          {
+            "name": "collect_api",
+            "line": 212
+          },
+          {
+            "name": "collect_tables",
+            "line": 280
+          },
+          {
+            "name": "generate_context",
+            "line": 319
+          },
+          {
+            "name": "build_evidence_json",
+            "line": 863
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "readme3_scanner.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "os",
+            "line": 3
+          },
+          {
+            "value": "pathlib",
+            "line": 4
+          }
+        ],
+        "functions": [
+          {
+            "name": "read_text",
+            "line": 130
+          },
+          {
+            "name": "rel_path",
+            "line": 142
+          },
+          {
+            "name": "language",
+            "line": 148
+          },
+          {
+            "name": "add_unique",
+            "line": 196
+          },
+          {
+            "name": "evidence_item",
+            "line": 203
+          },
+          {
+            "name": "line_number",
+            "line": 227
+          },
+          {
+            "name": "scan",
+            "line": 241
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "readme3.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "json",
+            "line": 3
+          },
+          {
+            "value": "sys",
+            "line": 4
+          },
+          {
+            "value": "datetime",
+            "line": 5
+          },
+          {
+            "value": "pathlib",
+            "line": 6
+          },
+          {
+            "value": "readme3_scanner",
+            "line": 56
+          },
+          {
+            "value": "readme3_analyzers",
+            "line": 58
+          },
+          {
+            "value": "readme3_evidence",
+            "line": 66
+          }
+        ],
+        "functions": [
+          {
+            "name": "main",
+            "line": 77
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "validate_readme.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "__future__",
+            "line": 1
+          },
+          {
+            "value": "json",
+            "line": 3
+          },
+          {
+            "value": "re",
+            "line": 4
+          },
+          {
+            "value": "sys",
+            "line": 5
+          },
+          {
+            "value": "pathlib",
+            "line": 6
+          }
+        ],
+        "functions": [
+          {
+            "name": "load_json",
+            "line": 73
+          },
+          {
+            "name": "get_evidence_environment_variables",
+            "line": 96
+          },
+          {
+            "name": "get_evidence_endpoints",
+            "line": 125
+          },
+          {
+            "name": "get_evidence_technologies",
+            "line": 159
+          },
+          {
+            "name": "get_evidence_tables",
+            "line": 191
+          },
+          {
+            "name": "get_evidence_commands",
+            "line": 223
+          },
+          {
+            "name": "extract_env_variables",
+            "line": 300
+          },
+          {
+            "name": "extract_endpoints",
+            "line": 349
+          },
+          {
+            "name": "extract_technologies",
+            "line": 385
+          },
+          {
+            "name": "extract_table_mentions",
+            "line": 435
+          },
+          {
+            "name": "extract_commands",
+            "line": 474
+          },
+          {
+            "name": "validate",
+            "line": 509
+          },
+          {
+            "name": "main",
+            "line": 768
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "makeReadme.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "json",
+            "line": 1
+          },
+          {
+            "value": "subprocess",
+            "line": 2
+          },
+          {
+            "value": "sys",
+            "line": 3
+          },
+          {
+            "value": "pathlib",
+            "line": 4
+          },
+          {
+            "value": "requests",
+            "line": 6
+          }
+        ],
+        "functions": [
+          {
+            "name": "error",
+            "line": 39
+          },
+          {
+            "name": "run_command",
+            "line": 48
+          },
+          {
+            "name": "load_api",
+            "line": 77
+          },
+          {
+            "name": "run_readme3",
+            "line": 129
+          },
+          {
+            "name": "get_context_files",
+            "line": 162
+          },
+          {
+            "name": "get_existing_readme",
+            "line": 200
+          },
+          {
+            "name": "limit_context",
+            "line": 236
+          },
+          {
+            "name": "create_generation_prompt",
+            "line": 252
+          },
+          {
+            "name": "call_zai",
+            "line": 432
+          },
+          {
+            "name": "clean_response",
+            "line": 554
+          },
+          {
+            "name": "save_candidate",
+            "line": 595
+          },
+          {
+            "name": "validate_readme",
+            "line": 627
+          },
+          {
+            "name": "create_repair_prompt",
+            "line": 668
+          },
+          {
+            "name": "save_final",
+            "line": 757
+          },
+          {
+            "name": "main",
+            "line": 788
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    }
+  },
+  "existing_readme": {
+    "exists": true,
+    "summary": [
+      "# coipo_aireadme"
+    ]
+  }
+}
