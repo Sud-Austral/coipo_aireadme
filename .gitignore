@@ -1,2 +1,25 @@
+# ------------------------------------------------------------------
+# NO QUITAR ESTAS DOS LINEAS.
+#
+# propagar.py y reset_uat_branches.py son scripts de operador que se
+# ejecutan a mano desde una maquina local y llevan un token de GitHub
+# escrito en el codigo. Este repositorio es PUBLICO: commitearlos
+# publicaria una credencial con permiso de escritura sobre toda la
+# organizacion.
+#
+# La parte reutilizable de esos scripts ya esta extraida, sin token, en
+# github_client.py, que si esta versionado y es lo que usa CI.
+#
+# ci.yml falla si aparece un token en cualquier archivo trackeado.
+# ------------------------------------------------------------------
 propagar.py
 reset_uat_branches.py
+
+# Artefactos del propio generador. No deben viajar al repositorio destino
+# ni volver a entrar al analisis en la corrida siguiente.
+readme_context/
+README_CANDIDATE.md
+
+# Python
+__pycache__/
+*.py[cod]

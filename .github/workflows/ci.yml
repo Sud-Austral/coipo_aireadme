@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  # ------------------------------------------------------------------
+  # Guarda de credenciales.
+  #
+  # propagar.py y reset_uat_branches.py estan ignorados a perpetuidad
+  # porque llevan un token en claro. Este job existe para que esa
+  # decision no dependa de que alguien la recuerde: si un token aparece
+  # en un archivo TRACKEADO, el build falla antes de que se pueda
+  # mergear.
+  # ------------------------------------------------------------------
+  credenciales:
+    name: Sin credenciales en archivos versionados
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Buscar tokens en archivos trackeados
+        run: |
+          echo "Archivos trackeados:"
+          git ls-files | wc -l
+
+          patron='github_pat_[A-Za-z0-9_]{20,}|ghp_[A-Za-z0-9]{30,}|gho_[A-Za-z0-9]{30,}|github_pat_11'
+
+          if git grep -InE "$patron" -- $(git ls-files); then
+            echo ""
+            echo "ERROR: se encontro un token de GitHub en un archivo versionado."
+            echo "Este repositorio es publico. Saca la credencial antes de continuar."
+            exit 1
+          fi
+
+          echo "OK: ningun token en archivos versionados."
+
+      - name: Verificar que los scripts de operador siguen ignorados
+        run: |
+          for archivo in propagar.py reset_uat_branches.py; do
+            if git ls-files --error-unmatch "$archivo" > /dev/null 2>&1; then
+              echo "ERROR: $archivo esta trackeado y no debe estarlo."
+              echo "Lleva un token en claro. Ver el comentario en .gitignore."
+              exit 1
+            fi
+            echo "OK: $archivo no esta trackeado."
+          done
+
+  # ------------------------------------------------------------------
+  # Sintaxis y contrato del motor.
+  # ------------------------------------------------------------------
+  motor:
+    name: Sintaxis y contrato
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Compilar todos los modulos
+        run: |
+          python -m compileall -q . && echo "Todos los modulos compilan."
+
+      - name: Validar YAML de los workflows
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+
+          import yaml
+
+          fallos = 0
+
+          for ruta in sorted(Path(".github/workflows").glob("*.yml")):
+              try:
+                  yaml.safe_load(ruta.read_text(encoding="utf-8"))
+                  print(f"OK: {ruta}")
+              except Exception as exc:
+                  print(f"ERROR: {ruta}: {exc}")
+                  fallos += 1
+
+          sys.exit(1 if fallos else 0)
+          PY
+
+      - name: Verificar la guarda de alcance del workflow reutilizable
+        run: |
+          python - <<'PY'
+          import sys
+
+          import yaml
+
+          ruta = ".github/workflows/generate-readme.yml"
+
+          with open(ruta, encoding="utf-8") as archivo:
+              datos = yaml.safe_load(archivo)
+
+          jobs = datos.get("jobs", {})
+
+          # Cada job del workflow reutilizable debe llevar la guarda de
+          # alcance. `if` es por job: no existe a nivel de workflow, asi que
+          # un job nuevo sin guarda se ejecutaria en los 400+ repositorios
+          # fuera de alcance que todavia tienen el stub instalado.
+          sin_guarda = [
+              nombre
+              for nombre, cuerpo in jobs.items()
+              if "coipo" not in str(cuerpo.get("if", ""))
+              and "needs" not in cuerpo
+          ]
+
+          if sin_guarda:
+              print(
+                  "ERROR: estos jobs no llevan la guarda de alcance "
+                  f"ni dependen de uno que la lleve: {sin_guarda}"
+              )
+              print(
+                  "Sin guarda, el job corre en todos los repositorios que "
+                  "tengan el stub, no solo en los coipo_*."
+              )
+              sys.exit(1)
+
+          print(f"OK: los {len(jobs)} job(s) estan dentro de la guarda.")
+          PY

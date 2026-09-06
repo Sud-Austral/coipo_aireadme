@@ -6,6 +6,25 @@ on:
 jobs:
   generate-readme:
     name: Generate and validate README
+
+    # ------------------------------------------------------------------
+    # ALCANCE: solo repositorios cuyo nombre empieza con "coipo".
+    #
+    # Dentro de un workflow reutilizable, el contexto `github` es SIEMPRE el
+    # del repositorio que LLAMA, no el de este repositorio. Por eso
+    # `github.repository` vale "Sud-Austral/<repo-llamante>".
+    #
+    # `startsWith()` no distingue mayusculas de minusculas, asi que esta
+    # unica clausula cubre tanto coipo_* como COIPO_*.
+    #
+    # Un job cuya condicion es falsa no recibe runner y no consume minutos.
+    #
+    # IMPORTANTE: si algun dia se agrega un segundo job a este workflow, hay
+    # que repetir esta guarda en el (o encadenarlo con `needs:`), porque
+    # `if` es por job y no existe a nivel de workflow.
+    # ------------------------------------------------------------------
+    if: startsWith(github.repository, 'Sud-Austral/coipo')
+
     runs-on: ubuntu-latest
 
     permissions:

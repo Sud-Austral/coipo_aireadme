@@ -8,5 +8,7 @@ on:
 
 jobs:
   call-readme-generator:
+    # `secrets: inherit` retirado: el workflow reutilizable no consume ningun
+    # secreto, asi que heredarlos era enviar los secretos de este repositorio
+    # a un workflow que no los necesita.
     uses: Sud-Austral/coipo_aireadme/.github/workflows/generate-readme.yml@main
-    secrets: inherit

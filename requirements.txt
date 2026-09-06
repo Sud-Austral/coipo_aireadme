@@ -1,0 +1,6 @@
+# Dependencias del motor de documentacion.
+# Versiones fijadas: el hub se despliega a la flota por referencia de tag,
+# asi que una dependencia flotante convierte cualquier release upstream en
+# un cambio no revisado en todos los repositorios en alcance.
+requests==2.32.3
+PyYAML==6.0.2
