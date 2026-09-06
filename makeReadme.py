@@ -23,6 +23,7 @@ from insumos_inversos import (
     hay_insumos_humanos,
     parsear as parsear_insumos,
     preparar as preparar_insumos,
+    validar_citas as validar_citas_insumos,
 )
 from readme3_orphans import find_candidates, resumen as resumen_orphans
 from readme3_fingerprint import (
@@ -86,6 +87,44 @@ def generar_insumos(repo, evidencia, contexto, api_key, model):
                 "AVISO: la respuesta no traia los separadores esperados. "
                 "No se escribio ningun insumo."
             )
+            return None
+
+        # --------------------------------------------------------
+        # Las citas tienen que apuntar a archivos que existen
+        #
+        # Es el control equivalente al de endpoints en
+        # validate_readme.py, y hace falta por la misma razon: medido
+        # sobre coipo_sitra —seis archivos HTML estaticos— el modelo cito
+        # auth.py, importers.py y models.py, ninguno de los cuales existe.
+        #
+        # Una cita inventada es peor que no citar: cumple la regla en la
+        # forma y la viola en el fondo, y ademas parece verificable.
+        # --------------------------------------------------------
+
+        citas = validar_citas_insumos(partes, evidencia)
+
+        if citas["inventadas"]:
+
+            print("")
+            print("=" * 70)
+            print(" INSUMOS RECHAZADOS: CITAS INVENTADAS")
+            print("=" * 70)
+            print("")
+            print(
+                f"{len(citas['inventadas'])} de {citas['total']} citas "
+                "apuntan a archivos que no existen en este repositorio:"
+            )
+            print("")
+
+            for archivo in citas["inventadas"][:15]:
+                print(f"   {archivo}")
+
+            print("")
+            print(
+                "No se escribe nada. Un documento con citas inventadas es "
+                "peor que ningun documento: parece verificable."
+            )
+
             return None
 
         resultado = escribir_insumos(repo, partes, hallazgos)
@@ -247,6 +286,9 @@ MAX_LLM_ATTEMPTS = 4
 LLM_BACKOFF_BASE = 2.0
 LLM_BACKOFF_MAX = 60.0
 
+# Opciones extra del modelo. Las fija load_api() desde api.json.
+LLM_EXTRA: dict = {}
+
 # Límites para evitar prompts gigantes.
 MAX_CONTEXT_CHARS = 30_000
 MAX_EXISTING_README_CHARS = 12_000
@@ -326,6 +368,31 @@ def load_api():
 
     model = config.get(
         "model"
+    )
+
+    # Razonamiento del modelo, desactivado por defecto.
+    #
+    # GLM-4.5-Flash genera tokens de pensamiento oculto en cada llamada.
+    # Medido: para un prompt de 10 tokens que responde "ok" gastaba 154
+    # tokens de salida y 14,4 segundos.
+    #
+    # Sobre una generacion real de README el A/B fue concluyente:
+    #
+    #     con razonamiento   16,4 s   460 tokens   README de 194 chars
+    #     sin razonamiento    3,9 s    91 tokens   README de 310 chars
+    #
+    # Cuatro veces mas rapido, cinco veces menos tokens, y la salida es
+    # MEJOR: incluye la version de la dependencia y una seccion que la otra
+    # omite. Tiene sentido: el prompt es una transcripcion estructurada de
+    # evidencia, no un problema que haya que razonar.
+    #
+    # Se puede volver a activar poniendo "thinking": true en api.json.
+    global LLM_EXTRA
+
+    LLM_EXTRA = (
+        {}
+        if config.get("thinking")
+        else {"thinking": {"type": "disabled"}}
     )
 
     if not api_key:
@@ -728,6 +795,8 @@ def call_zai(
 
         "stream": False,
     }
+
+    payload.update(LLM_EXTRA)
 
     response = None
 

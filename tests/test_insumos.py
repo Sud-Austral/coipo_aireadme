@@ -33,6 +33,7 @@ from insumos_inversos import (                  # noqa: E402
     hay_insumos_humanos,
     parsear,
     sellar_manifiesto,
+    validar_citas,
 )
 from readme3_pii import (                       # noqa: E402
     detectar,
@@ -293,3 +294,86 @@ def test_el_ancla_del_gitignore_se_comprueba_bien():
     # Sin ancla no cuenta.
     assert not esta_ignorado_con_ancla("otros/cosa.csv", patrones)
     assert not esta_ignorado_con_ancla("insumos/otros/x.csv", patrones)
+
+
+# ============================================================
+# CITAS INVENTADAS
+# ============================================================
+
+EVIDENCIA_MINIMA = {
+    "files": [
+        {"path": "INSUMO/index.html"},
+        {"path": "README.md"},
+        {"path": "frontend/package.json"},
+    ]
+}
+
+
+def test_una_cita_a_un_archivo_inexistente_se_detecta():
+    """
+    El fallo mas grave posible aqui. Medido sobre coipo_sitra —seis
+    archivos HTML estaticos— el modelo cito auth.py, importers.py y
+    models.py: el 100% de sus citas eran inventadas.
+
+    Una cita falsa cumple la regla "sin cita no hay afirmacion" en la forma
+    y la viola en el fondo, y ademas parece verificable.
+    """
+
+    partes = {
+        "00-PROBLEMA.md": "Existen roles [auth.py:15] y modelos [models.py:3].",
+    }
+
+    resultado = validar_citas(partes, EVIDENCIA_MINIMA)
+
+    assert set(resultado["inventadas"]) == {"auth.py", "models.py"}
+    assert resultado["proporcion_inventada"] == 1.0
+
+
+def test_una_cita_valida_se_acepta():
+    partes = {
+        "01-SOLUCION.md": "Publica una pagina [INSUMO/index.html:1].",
+    }
+
+    resultado = validar_citas(partes, EVIDENCIA_MINIMA)
+
+    assert resultado["inventadas"] == []
+    assert "INSUMO/index.html" in resultado["validas"]
+
+
+def test_se_acepta_el_nombre_a_secas():
+    """
+    El modelo a veces cita `package.json` en vez de la ruta completa. Eso
+    no es una invencion.
+    """
+
+    partes = {"01-SOLUCION.md": "Declara dependencias [package.json:22]."}
+
+    resultado = validar_citas(partes, EVIDENCIA_MINIMA)
+
+    assert resultado["inventadas"] == []
+
+
+def test_las_marcas_no_se_confunden_con_citas():
+    partes = {
+        "00-PROBLEMA.md": (
+            "Cuantas personas son es [PENDIENTE]. "
+            "La norma es [VERIFICAR]. Los roles [INFERIDO]."
+        )
+    }
+
+    resultado = validar_citas(partes, EVIDENCIA_MINIMA)
+
+    assert resultado["total"] == 0
+    assert resultado["inventadas"] == []
+
+
+def test_el_informe_no_se_valida():
+    """
+    El INFORME habla de lo que falta, no afirma nada sobre el sistema.
+    """
+
+    partes = {
+        "INFORME": "Falta revisar si existe algo como config.py.",
+    }
+
+    assert validar_citas(partes, EVIDENCIA_MINIMA)["total"] == 0

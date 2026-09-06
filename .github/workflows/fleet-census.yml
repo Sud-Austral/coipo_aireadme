@@ -1,0 +1,174 @@
+name: Censo de la flota
+
+# ======================================================================
+# Construye el indice de la familia COIPO.
+#
+# No llama al modelo y no escribe en ningun repositorio analizado: descarga
+# cada uno como tarball, corre el pipeline de evidencia en memoria y produce
+# una ficha de menos de 5 KB. Cero tokens, cero pull requests.
+#
+# Publica en dos sitios, y la separacion es deliberada:
+#
+#   Sud-Austral/coipo_index   PRIVADO. Las 57 fichas completas.
+#   este repositorio, fleet/  PUBLICO. Solo los repositorios publicos en
+#                             detalle; de los privados, un recuento sin
+#                             nombres.
+#
+# De un repositorio privado no sale nada: ni el nombre, ni endpoints, ni
+# tablas, ni variables. No son secretos —nunca hay valores— pero juntos son
+# un mapa de la superficie de ataque de sistemas internos de un organismo
+# publico. fleet_card.verificar_sin_fuga() lo comprueba antes de publicar y
+# aborta si encuentra algo.
+#
+# EL CRON ESTA DESACTIVADO hasta medir cuanto tarda un censo completo.
+# ======================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+
+      limite:
+        description: Censar solo los primeros N repositorios (0 = todos)
+        type: string
+        required: false
+        default: "0"
+
+      publicar:
+        description: Publicar el resultado. Si no, solo se deja como artefacto.
+        type: boolean
+        required: false
+        default: false
+
+  # schedule:
+  #   - cron: "0 5 * * 1"   # lunes 05:00 UTC. Ver la nota de arriba.
+
+permissions:
+  contents: write
+
+jobs:
+
+  censar:
+    name: Censar y publicar
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Censar
+        env:
+          GH_FLEET_TOKEN: ${{ secrets.GH_FLEET_TOKEN }}
+        run: |
+          if [ -z "$GH_FLEET_TOKEN" ]; then
+            echo "ERROR: falta el secreto GH_FLEET_TOKEN."
+            echo ""
+            echo "Necesita lectura de contenidos sobre los repositorios de"
+            echo "la organizacion. 30 de los 57 en alcance son privados y"
+            echo "GITHUB_TOKEN no lee repositorios hermanos."
+            exit 1
+          fi
+
+          python fleet_scan.py \
+            --limite "${{ inputs.limite }}" \
+            --salida indice
+
+      - name: Resumen
+        run: |
+          {
+            echo "## Censo de la flota"
+            echo
+            cat indice/fleet/INVENTARIO.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: indice-coipo
+          path: indice/
+          retention-days: 30
+
+      # ----------------------------------------------------------------
+      # Indice privado: las 57 fichas completas
+      # ----------------------------------------------------------------
+
+      - name: Publicar el indice privado
+        if: ${{ inputs.publicar == true }}
+        env:
+          GH_INDEX_TOKEN: ${{ secrets.GH_INDEX_TOKEN }}
+        run: |
+          if [ -z "$GH_INDEX_TOKEN" ]; then
+            echo "ERROR: falta el secreto GH_INDEX_TOKEN."
+            echo "Necesita escritura sobre Sud-Austral/coipo_index."
+            exit 1
+          fi
+
+          git clone --depth 1 \
+            "https://x-access-token:$GH_INDEX_TOKEN@github.com/Sud-Austral/coipo_index.git" \
+            destino || {
+              mkdir destino
+              cd destino
+              git init -b main
+              git remote add origin \
+                "https://x-access-token:$GH_INDEX_TOKEN@github.com/Sud-Austral/coipo_index.git"
+              cd ..
+            }
+
+          rm -rf destino/cards destino/fleet
+          cp -r indice/cards indice/fleet destino/
+
+          cd destino
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "Sin cambios en el indice."
+            exit 0
+          fi
+
+          # Un commit por corrida: la foto queda fechada y el diff entre
+          # commits muestra como evoluciona la deuda documental.
+          git commit -m "censo: $(date -u +%Y-%m-%d)"
+          git push origin HEAD:main
+
+      # ----------------------------------------------------------------
+      # Vista publica: solo lo publicable
+      # ----------------------------------------------------------------
+
+      - name: Publicar la vista publica
+        if: ${{ inputs.publicar == true }}
+        run: |
+          mkdir -p fleet
+          cp indice/publico/CATALOGO.md fleet/CATALOGO.md
+          cp indice/publico/catalogo.json fleet/catalogo.json
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add fleet/
+
+          if git diff --cached --quiet; then
+            echo "Sin cambios en la vista publica."
+            exit 0
+          fi
+
+          git commit -m "catalogo: $(date -u +%Y-%m-%d)"
+
+          # Con GITHUB_TOKEN a proposito: los commits hechos con este token
+          # no disparan eventos push, asi que el hub no se auto-documenta
+          # en cada censo.
+          git push

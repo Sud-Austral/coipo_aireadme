@@ -38,6 +38,10 @@ La evidencia dice que hace el codigo. No dice que quiso hacer nadie, ni para
 quien, ni por que. Confundir esas dos cosas es el unico error grave que puedes
 cometer aca.
 
+Y los EJEMPLOS de estas instrucciones no son evidencia. Si una palabra
+aparece solo en este texto y no en el bloque de evidencia, no puede aparecer
+en lo que escribas.
+
 ## Las tres marcas
 
   [INFERIDO]   lo dedujiste de la evidencia, y la cita va al lado. Es una
@@ -80,9 +84,11 @@ Aca si estas en tu terreno: el codigo ES la solucion. Este documento deberia
 salir casi completo y con citas densas.
 
   - Que hace el sistema, en dos parrafos y sin nombrar tecnologia. Sale de los
-    endpoints, las tablas y los docstrings. Describe capacidades, no archivos:
-    "permite registrar convenios y consultarlos por institucion", nunca "tiene
-    un modulo convenios.py".
+    endpoints, las tablas y los docstrings. Describe CAPACIDADES, no
+    archivos: la forma correcta es "permite <verbo> <entidad> y <verbo>
+    <entidad>", nunca "tiene un modulo <archivo>.py". Los verbos y las
+    entidades salen de los endpoints y las tablas de la evidencia, no de
+    este ejemplo.
   - Roles: quien ve que. Es la parte mas solida que vas a escribir. Cada rol
     con la cita del guard o decorador que lo impone y que operaciones
     habilita. Si un rol existe en el codigo pero ninguna ruta lo usa, dilo.
@@ -102,13 +108,16 @@ En el levantamiento normal el manifiesto se declara ANTES de abrir nada. Aca
 los archivos ya estan abiertos, asi que el manifiesto documenta lo que hay y
 deja constancia de lo que falta declarar.
 
-    - ruta: backend/scripts/convenios.generated.json
+    - ruta: <ruta del archivo, tal cual aparece en la evidencia>
       sha256: "<lo calcula el script de sellado>"
       origen: "[PENDIENTE] quien lo entrego y cuando"
-      contiene_pii: "[VERIFICAR] 298 patrones de RUT; el formato de empresa y
-                     el de persona natural son identicos"
+      contiene_pii: "[VERIFICAR] <patron y conteo, NUNCA el valor>"
       puede_versionarse: true
-      uso: catalogo_convenios
+      uso: <para que se usa, deducido de como lo consume el codigo>
+
+  ATENCION: los angulos son marcadores de posicion. No copies ninguna
+  palabra de este ejemplo al documento real. Si tu manifiesto menciona algo
+  que no esta en la evidencia de mas abajo, esta mal.
 
   - ruta, sha256 y puede_versionarse no los redactas tu: los calcula el
     script.

@@ -170,6 +170,81 @@ def crear_prompt(
 # RESPUESTA
 # ============================================================
 
+CITA = re.compile(
+    r"\[(?P<archivo>[A-Za-z0-9_./\\-]+\.[A-Za-z0-9]{1,6})"
+    r"(?::(?P<linea>\d+))?\]"
+)
+
+# Marcas del propio formato: no son citas de archivo.
+NO_ES_CITA = {
+    "INFERIDO", "PENDIENTE", "VERIFICAR",
+    "00-PROBLEMA.md", "01-SOLUCION.md", "MANIFIESTO.yaml",
+}
+
+
+def validar_citas(
+    partes: dict[str, str],
+    evidencia: dict,
+) -> dict:
+    """
+    Comprueba que cada cita apunte a un archivo que existe de verdad.
+
+    Es el mismo control que validate_readme.py hace con los endpoints, y
+    hace falta por la misma razon. Medido sobre coipo_sitra —seis archivos
+    HTML estaticos— el modelo cito `auth.py:15`, `importers.py:8` y
+    `models.py:23`, ninguno de los cuales existe.
+
+    Es el fallo mas grave posible aqui: la regla "sin cita no hay
+    afirmacion" se cumple en la forma y se viola en el fondo. Una cita
+    inventada es peor que no citar, porque parece verificable.
+    """
+
+    reales = {
+        archivo["path"]
+        for archivo in (evidencia.get("files") or [])
+    }
+
+    # Se acepta tambien el nombre a secas: el modelo a veces cita
+    # "package.json" en vez de "frontend/package.json".
+    nombres = {ruta.split("/")[-1] for ruta in reales}
+
+    validas: set[str] = set()
+    inventadas: set[str] = set()
+
+    for nombre_documento, texto in partes.items():
+
+        if nombre_documento == "INFORME":
+            continue
+
+        for coincidencia in CITA.finditer(texto):
+
+            archivo = coincidencia.group("archivo")
+
+            if archivo in NO_ES_CITA:
+                continue
+
+            normalizado = archivo.replace("\\", "/").lstrip("./")
+
+            if (
+                normalizado in reales
+                or normalizado.split("/")[-1] in nombres
+            ):
+                validas.add(normalizado)
+            else:
+                inventadas.add(normalizado)
+
+    total = len(validas) + len(inventadas)
+
+    return {
+        "validas": sorted(validas),
+        "inventadas": sorted(inventadas),
+        "total": total,
+        "proporcion_inventada": (
+            len(inventadas) / total if total else 0.0
+        ),
+    }
+
+
 def parsear(respuesta: str) -> dict[str, str]:
     """
     Separa la respuesta en los documentos que declara.

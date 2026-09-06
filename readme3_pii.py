@@ -47,6 +47,63 @@ CORREO = re.compile(
     r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
 )
 
+# Direcciones que por definicion no llevan a una persona: cuentas de
+# maquina, buzones sin respuesta y dominios reservados para documentacion.
+#
+# Sin esto, la identidad git del bot
+# (41898282+github-actions[bot]@users.noreply.github.com), que aparece en
+# todos los workflows, se contaba como dato personal.
+CORREO_NO_PERSONAL = re.compile(
+    r"""(
+          @users\.noreply\.github\.com$
+        | ^(no-?reply|noreply|donotreply|postmaster|webmaster|admin|
+            root|info|contacto|soporte|support)@
+        | @(example|test|localhost|invalid|domain)\.
+        | @(example|test)\.(com|org|net)$
+        | @sentry\.io$
+    )""",
+    re.IGNORECASE | re.VERBOSE,
+)
+
+
+def _correos_personales(texto: str) -> set[str]:
+    """
+    Correos que podrian llevar a una persona.
+
+    Se descarta lo que solo tiene forma de correo:
+
+      - buzones de maquina y dominios de documentacion (CORREO_NO_PERSONAL);
+      - la parte de credenciales de una URL. `https://x-access-token:
+        $TOKEN@github.com/...` casa el patron y no es un correo de nadie.
+    """
+
+    resultado = set()
+
+    for coincidencia in CORREO.finditer(texto):
+
+        valor = coincidencia.group(0)
+
+        if CORREO_NO_PERSONAL.search(valor):
+            continue
+
+        # Una plantilla no es una direccion: `$TOKEN@host`, `${VAR}@host`.
+        anterior = texto[max(0, coincidencia.start() - 40):coincidencia.start()]
+
+        if anterior.rstrip().endswith(("$", "}", ":", "//")):
+            continue
+
+        # Userinfo de una URL. Se busca "://" hacia atras sin pasar por un
+        # espacio: `https://usuario:$TOKEN@github.com/...` casa el patron de
+        # correo y no es la direccion de nadie.
+        ventana = anterior.split()[-1] if anterior.split() else ""
+
+        if "://" in ventana:
+            continue
+
+        resultado.add(valor)
+
+    return resultado
+
 TELEFONO_CL = re.compile(r"\+56\s?9\s?\d{4}\s?\d{4}\b")
 
 # Nombres de columna o de clave que suelen acompanar datos personales.
@@ -139,7 +196,7 @@ def analizar_archivo(repo: Path, archivo: dict) -> dict | None:
 
     conteos = {
         "rut": len(set(RUT.findall(texto))),
-        "correo": len(set(CORREO.findall(texto))),
+        "correo": len(_correos_personales(texto)),
         "telefono": len(set(TELEFONO_CL.findall(texto))),
         "campos_sensibles": len(
             {m.lower() for m in CAMPOS_SENSIBLES.findall(texto)}
