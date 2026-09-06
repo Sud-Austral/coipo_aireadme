@@ -26,3 +26,4 @@ __pycache__/
 
 # Informe de la corrida. Se regenera en cada ejecucion.
 readme_report.md
+delete_files.md

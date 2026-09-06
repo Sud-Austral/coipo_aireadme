@@ -7,11 +7,17 @@ from pathlib import Path
 
 import requests
 
+from delete_files import (
+    construir as construir_delete_files,
+    crear_prompt as crear_prompt_limpieza,
+    parsear_respuesta as parsear_limpieza,
+)
 from pr_body import (
     cargar_evidencia,
     construir as construir_informe,
     escribir as escribir_informe,
 )
+from readme3_orphans import find_candidates, resumen as resumen_orphans
 from readme3_fingerprint import (
     compute as calcular_huella,
     leer as leer_huella,
@@ -33,6 +39,57 @@ class _ResultadoSimple:
         self.motivo = motivo
         self.conflictos = []
         self.escribe = False
+
+
+def generar_delete_files(repo, evidencia, veredicto=None):
+    """
+    Escribe delete_files.md.
+
+    La deteccion de candidatos es determinista y no necesita al modelo, asi
+    que el archivo se genera tambien cuando la corrida termina temprano. El
+    modelo, cuando se le llama, solo aporta el juicio y la justificacion.
+    """
+
+    try:
+
+        candidatos = find_candidates(
+            repo,
+            evidencia.get("files") or [],
+            evidencia.get("analysis") or {},
+        )
+
+        if not candidatos:
+            return None, []
+
+        contenido = construir_delete_files(
+            nombre_repo=repo.name,
+            candidatos=candidatos,
+            veredicto=veredicto or {"borrar": [], "revisar": []},
+            resumen_detector=resumen_orphans(
+                candidatos,
+                len(evidencia.get("files") or []),
+            ),
+            total_archivos=len(evidencia.get("files") or []),
+        )
+
+        destino = repo / DELETE_FILE_NAME
+
+        destino.write_text(contenido, encoding="utf-8")
+
+        print("")
+        print(
+            f"Candidatos a borrar: {len(candidatos)} -> {destino}"
+        )
+
+        return destino, candidatos
+
+    except Exception as exc:
+
+        # Util, pero nunca puede tumbar la corrida.
+        print("")
+        print(f"AVISO: no se pudo generar {DELETE_FILE_NAME}: {exc}")
+
+        return None, []
 
 
 def detener(repo, titulo, mensaje, evidencia, accion):
@@ -67,6 +124,11 @@ def detener(repo, titulo, mensaje, evidencia, accion):
         print("")
         print(f"AVISO: no se pudo generar el informe: {exc}")
 
+    # La lista de candidatos a borrar es determinista: se genera igual,
+    # aunque no se haya llamado al modelo. Sin juicio, todo cae en
+    # "Revisar", que es el lado seguro.
+    generar_delete_files(repo, evidencia)
+
     sys.exit(0)
 
 
@@ -92,6 +154,10 @@ CANDIDATE_FILE_NAME = "README_CANDIDATE.md"
 # ejecucion, para que la evidencia y la propuesta se vean incluso cuando el
 # contrato con el humano decide no modificar nada.
 REPORT_FILE_NAME = "readme_report.md"
+
+# Propuesta de limpieza. El generador NUNCA borra: este archivo es una lista
+# para que decida una persona.
+DELETE_FILE_NAME = "delete_files.md"
 
 MAX_REPAIR_ATTEMPTS = 2
 
@@ -1343,6 +1409,47 @@ def main():
         # El informe es util, pero nunca puede tumbar la corrida.
         print("")
         print(f"AVISO: no se pudo generar el informe: {exc}")
+
+    # --------------------------------------------------------
+    # PROPUESTA DE LIMPIEZA
+    #
+    # Segunda llamada al modelo, con prompt propio. No descubre candidatos
+    # —eso es determinista y ya esta hecho—: solo los juzga y explica.
+    # --------------------------------------------------------
+
+    candidatos = find_candidates(
+        repo,
+        evidencia.get("files") or [],
+        evidencia.get("analysis") or {},
+    )
+
+    veredicto = None
+
+    if candidatos:
+
+        try:
+
+            respuesta = call_zai(
+                api_key,
+                model,
+                crear_prompt_limpieza(candidatos, repo.name),
+                "PASO 5/5 - PROPONIENDO LIMPIEZA",
+            )
+
+            veredicto = parsear_limpieza(respuesta)
+
+        except SystemExit:
+            # call_zai llama a error() ante un fallo no recuperable. La
+            # limpieza es accesoria: no puede tumbar una corrida que ya
+            # produjo el README.
+            print("")
+            print(
+                "AVISO: no se pudo obtener el juicio de limpieza. "
+                "Los candidatos quedan todos en 'Revisar'."
+            )
+            veredicto = None
+
+    generar_delete_files(repo, evidencia, veredicto)
 
     print("")
     print("=" * 70)

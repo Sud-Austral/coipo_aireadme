@@ -493,6 +493,7 @@ jobs:
           # siguiente, el escaner lo leia como si fuera codigo del proyecto.
           add-paths: |
             README.md
+            delete_files.md
 
           commit-message: "docs: update README automatically"
 

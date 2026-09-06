@@ -62,6 +62,7 @@ IGNORED_FILES = {
     # leeria a si mismo en la corrida siguiente.
     "README_CANDIDATE.md",
     "readme_report.md",
+    "delete_files.md",
 }
 
 TEXT_EXTENSIONS = {
