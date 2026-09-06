@@ -16,4 +16,4 @@ on:
 jobs:
   call-readme-generator:
     # Referencia fija: main es rama de trabajo del hub, no produccion.
-    uses: Sud-Austral/coipo_aireadme/.github/workflows/generate-readme.yml@v1
+    uses: Sud-Austral/coipo_aireadme/.github/workflows/generate-readme.yml@main
