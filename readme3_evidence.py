@@ -360,6 +360,25 @@ def generate_context(
             "Do not infer unsupported functionality.",
             "Prefer explicit files, dependencies and source evidence.",
             "If evidence is insufficient, omit the claim.",
+            "",
+            "## README_RULES",
+            "",
+            "Generate README.md only from repository evidence.",
+            "Do not invent features.",
+            "Do not invent technologies.",
+            "Only document technologies listed under TECH=. Each one carries",
+            "its provenance and its citation. Anything under",
+            "TECH_ONLY_MENTIONED is NOT evidence: do not document it.",
+            "Do not invent endpoints.",
+            "Do not invent database tables.",
+            "Do not invent environment variables.",
+            "Do not invent commands.",
+            "Do not infer production architecture from filenames alone.",
+            "Treat capability signals as signals, not confirmed features.",
+            "Files or manifests marked [TERCEROS] are third-party code that",
+            "the repository vendors. They are not what this project does.",
+            "Prefer explicit source evidence.",
+            "Omit unsupported sections.",
         ]
     )
 
@@ -915,28 +934,13 @@ def generate_context(
             )
         )
 
-    # --------------------------------------------------------
-    # REGLAS LLM
-    # --------------------------------------------------------
-
-    lines.extend(
-        [
-            "",
-            "## README_RULES",
-            "",
-            "Generate README.md only from repository evidence.",
-            "Do not invent features.",
-            "Do not invent technologies.",
-            "Do not invent endpoints.",
-            "Do not invent database tables.",
-            "Do not invent environment variables.",
-            "Do not invent commands.",
-            "Do not infer production architecture from filenames alone.",
-            "Treat capability signals as signals, not confirmed features.",
-            "Prefer explicit source evidence.",
-            "Omit unsupported sections.",
-        ]
-    )
+    # Las reglas ya no van aqui: se emiten al PRINCIPIO del contexto.
+    #
+    # Estaban al final, y el truncado a 30.000 caracteres las borraba en los
+    # repositorios grandes. Medido: en COIPO_ENTREGA_PLANTA y en
+    # coipo_seguimiento_madera el contexto supera ese limite, asi que
+    # justamente los repositorios mas dificiles de documentar eran los que
+    # llegaban al modelo SIN las reglas anti-invencion.
 
     return "\n".join(lines)
 

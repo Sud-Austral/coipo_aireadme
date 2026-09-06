@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import json
 import re
+import warnings
 from pathlib import Path
 
 from readme3_scanner import (
@@ -58,7 +59,15 @@ def analyze_python(path: Path, repo: Path):
     }
 
     try:
-        tree = ast.parse(text)
+        # Silenciado a proposito: ast.parse emite SyntaxWarning cuando el
+        # codigo ANALIZADO trae un escape invalido, y lo atribuye a
+        # "<unknown>". No es un problema de este analizador ni algo que
+        # podamos corregir en el repositorio ajeno; en un barrido de decenas
+        # de repositorios solo ensucia el log.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", SyntaxWarning)
+            tree = ast.parse(text)
+
     except Exception:
         return result
 
