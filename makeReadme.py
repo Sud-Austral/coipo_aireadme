@@ -12,7 +12,62 @@ from pr_body import (
     construir as construir_informe,
     escribir as escribir_informe,
 )
-from readme_merge import merge
+from readme3_fingerprint import (
+    compute as calcular_huella,
+    leer as leer_huella,
+    quitar as quitar_huella,
+    sellar as sellar_huella,
+)
+from readme_merge import decidir_accion, merge
+
+
+# ============================================================
+# SALIDA TEMPRANA
+# ============================================================
+
+class _ResultadoSimple:
+    """Forma minima que espera el informe cuando no hubo fusion."""
+
+    def __init__(self, accion, motivo):
+        self.accion = accion
+        self.motivo = motivo
+        self.conflictos = []
+        self.escribe = False
+
+
+def detener(repo, titulo, mensaje, evidencia, accion):
+    """
+    Termina la corrida sin llamar al modelo, dejando el informe escrito.
+
+    Es una salida con exito, no un fallo: no haber cambiado nada es el
+    resultado correcto cuando no hay nada que cambiar.
+    """
+
+    print("")
+    print("=" * 70)
+    print(f" {titulo}")
+    print("=" * 70)
+    print("")
+    print(mensaje)
+
+    try:
+        escribir_informe(
+            repo / REPORT_FILE_NAME,
+            construir_informe(
+                nombre_repo=repo.name,
+                resultado_merge=_ResultadoSimple(accion, mensaje),
+                evidencia=evidencia,
+            ),
+        )
+
+        print("")
+        print(f"Informe: {repo / REPORT_FILE_NAME}")
+
+    except Exception as exc:
+        print("")
+        print(f"AVISO: no se pudo generar el informe: {exc}")
+
+    sys.exit(0)
 
 
 # ============================================================
@@ -220,6 +275,26 @@ def get_context_files(repo):
 # README EXISTENTE
 # ============================================================
 
+def leer_readme_crudo(repo):
+    """
+    Lee el README tal cual esta en disco, con su marcador de huella.
+
+    get_existing_readme lo quita a proposito antes de enviarlo al modelo.
+    Para comparar huellas hace falta el texto sin tocar.
+    """
+
+    archivo = repo / "README.md"
+
+    if not archivo.exists():
+        return None
+
+    try:
+        return archivo.read_text(encoding="utf-8", errors="ignore")
+
+    except Exception:
+        return None
+
+
 def get_existing_readme(repo):
 
     readme_file = repo / "README.md"
@@ -237,6 +312,10 @@ def get_existing_readme(repo):
     except Exception:
 
         return ""
+
+    # El marcador de huella no se envia al modelo: si lo viera, lo copiaria
+    # o lo mutilaria, y una huella corrupta obliga a regenerar siempre.
+    text = quitar_huella(text)
 
     # No necesitamos enviar README gigantesco.
     if len(text) > MAX_EXISTING_README_CHARS:
@@ -847,6 +926,7 @@ Devuelve exclusivamente el README corregido.
 def save_final(
     repo,
     content,
+    huella=None,
 ):
     """
     Guarda el README aplicando el contrato con el humano.
@@ -892,10 +972,17 @@ def save_final(
 
         return None, resultado
 
+    final = resultado.contenido.strip() + "\n"
+
+    # Se sella la huella de la evidencia con la que se genero. La proxima
+    # corrida la compara y, si nada cambio, no llama al modelo.
+    if huella:
+        final = sellar_huella(final, huella)
+
     try:
 
         output.write_text(
-            resultado.contenido.strip() + "\n",
+            final,
             encoding="utf-8",
         )
 
@@ -915,21 +1002,47 @@ def save_final(
 
 def main():
 
-    if len(sys.argv) != 2:
+    # La consola de Windows usa cp1252 y el mensaje de error de un servicio
+    # externo puede traer cualquier caracter. Sin esto, un fallo al imprimir
+    # el error mata el proceso con un traceback en vez de dar el mensaje.
+    for flujo in (sys.stdout, sys.stderr):
+        try:
+            flujo.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+    argumentos = [a for a in sys.argv[1:] if not a.startswith("--")]
+
+    banderas = {a for a in sys.argv[1:] if a.startswith("--")}
+
+    forzar = "--force" in banderas
+    proponer = "--proponer" in banderas
+
+    if len(argumentos) != 1:
 
         print("")
         print("Uso:")
         print("")
         print(
-            'python makeReadme.py '
-            '"D:\\GitHub\\COIPO_ENTREGA_PLANTA"'
+            'python makeReadme.py "D:\\GitHub\\COIPO_ENTREGA_PLANTA"'
+        )
+        print("")
+        print("Opciones:")
+        print(
+            "  --force      Regenerar aunque la evidencia no haya cambiado."
+        )
+        print(
+            "  --proponer   Generar la propuesta aunque el contrato con el"
+        )
+        print(
+            "               humano vaya a dejar el README intacto."
         )
         print("")
 
         sys.exit(1)
 
     repo = Path(
-        sys.argv[1]
+        argumentos[0]
     ).resolve()
 
     if not repo.exists():
@@ -1000,6 +1113,64 @@ def main():
             repo
         )
     )
+
+    evidencia = cargar_evidencia(evidence_file)
+
+    huella_nueva = calcular_huella(evidencia)
+
+    # --------------------------------------------------------
+    # CORTES ANTES DE GASTAR UNA LLAMADA AL MODELO
+    # --------------------------------------------------------
+
+    accion_prevista = decidir_accion(existing_readme, repo.name)
+
+    if accion_prevista in {"respetado", "bloqueado"} and not proponer:
+
+        motivo = (
+            "El README esta escrito a mano y no declara ningun bloque "
+            "gestionado."
+            if accion_prevista == "respetado"
+            else "El README declara <!-- ai-readme:lock -->."
+        )
+
+        detener(
+            repo=repo,
+            titulo=f"CONTRATO CON EL HUMANO: {accion_prevista.upper()}",
+            mensaje=(
+                f"{motivo}\n"
+                "\n"
+                "El contrato ya garantiza que no se va a modificar nada, asi "
+                "que no se llama al modelo: seria trabajo tirado.\n"
+                "\n"
+                "Para ver que propondria el generador, ejecuta con "
+                "--proponer, o lanza el workflow a mano con esa opcion."
+            ),
+            evidencia=evidencia,
+            accion=accion_prevista,
+        )
+
+    # La huella se lee del README EN DISCO, no de `existing_readme`:
+    # get_existing_readme quita el marcador a proposito para que no llegue
+    # al modelo, asi que leerla de ahi devolvia siempre None y el corte no
+    # se activaba nunca.
+    huella_previa = leer_huella(leer_readme_crudo(repo))
+
+    if huella_previa and huella_previa == huella_nueva and not forzar:
+
+        detener(
+            repo=repo,
+            titulo="SIN CAMBIOS EN LA EVIDENCIA",
+            mensaje=(
+                f"La huella de la evidencia sigue siendo {huella_nueva[:12]}.\n"
+                "\n"
+                "Ni las dependencias, ni los endpoints, ni las tablas, ni las "
+                "variables de entorno cambiaron desde la ultima generacion.\n"
+                "\n"
+                "No se llama al modelo. Usa --force para regenerar igualmente."
+            ),
+            evidencia=evidencia,
+            accion="sin_cambios",
+        )
 
     prompt = create_generation_prompt(
         context=context,
@@ -1136,6 +1307,7 @@ def main():
     final, resultado_merge = save_final(
         repo,
         readme,
+        huella_nueva,
     )
 
     # --------------------------------------------------------

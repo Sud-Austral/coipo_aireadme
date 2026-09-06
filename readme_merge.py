@@ -195,6 +195,31 @@ def parse_bloques(readme: str) -> list[dict]:
 # FUSION
 # ============================================================
 
+def decidir_accion(
+    readme_actual: str | None,
+    nombre_repo: str,
+) -> str:
+    """
+    Decide que hara el contrato SIN necesitar el texto generado.
+
+    Sirve para no gastar una llamada al modelo cuando ya se sabe que no se
+    va a escribir nada. Medido sobre la flota: 14 de 24 repositorios tienen
+    README escrito a mano, asi que en mas de la mitad de los casos la
+    llamada era trabajo tirado.
+    """
+
+    if readme_actual and esta_bloqueado(readme_actual):
+        return "bloqueado"
+
+    if tiene_marcadores(readme_actual):
+        return "fusionado"
+
+    if es_placeholder(readme_actual, nombre_repo):
+        return "creado"
+
+    return "respetado"
+
+
 def merge(
     readme_actual: str | None,
     readme_generado: str,
