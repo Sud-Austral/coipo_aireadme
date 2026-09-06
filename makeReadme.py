@@ -1,6 +1,8 @@
 import json
+import random
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -25,6 +27,15 @@ ZAI_URL = (
 CANDIDATE_FILE_NAME = "README_CANDIDATE.md"
 
 MAX_REPAIR_ATTEMPTS = 2
+
+# Reintentos de la llamada al modelo.
+#
+# Sin esto, un solo 429 o 5xx aborta el workflow completo. En un barrido por
+# lotes eso significa que los repositorios afectados desaparecen de la corrida
+# sin dejar ninguna señal.
+MAX_LLM_ATTEMPTS = 4
+LLM_BACKOFF_BASE = 2.0
+LLM_BACKOFF_MAX = 60.0
 
 # Límites para evitar prompts gigantes.
 MAX_CONTEXT_CHARS = 30_000
@@ -484,34 +495,101 @@ def call_zai(
         "stream": False,
     }
 
-    try:
+    response = None
 
-        response = requests.post(
-            ZAI_URL,
-            headers=headers,
-            json=payload,
-            timeout=300,
-        )
+    last_error = ""
 
-    except requests.RequestException as exc:
-
-        error(
-            "No fue posible conectarse con Z.ai:\n"
-            f"{exc}"
-        )
-
-    if response.status_code != 200:
+    for attempt in range(1, MAX_LLM_ATTEMPTS + 1):
 
         try:
-            details = response.json()
 
-        except Exception:
-            details = response.text
+            response = requests.post(
+                ZAI_URL,
+                headers=headers,
+                json=payload,
+                timeout=300,
+            )
+
+        except requests.RequestException as exc:
+
+            response = None
+
+            last_error = (
+                "No fue posible conectarse con Z.ai:\n"
+                f"{exc}"
+            )
+
+        else:
+
+            if response.status_code == 200:
+                break
+
+            try:
+                details = response.json()
+
+            except Exception:
+                details = response.text
+
+            last_error = (
+                f"HTTP: {response.status_code}\n"
+                f"Respuesta:\n{details}"
+            )
+
+            # Un 4xx que no sea 429 es un problema del prompt o de la
+            # credencial. Reintentarlo solo gasta tiempo.
+            if (
+                400 <= response.status_code < 500
+                and response.status_code != 429
+            ):
+                error(
+                    "Z.ai devolvió un error no recuperable.\n\n"
+                    f"{last_error}"
+                )
+
+        if attempt == MAX_LLM_ATTEMPTS:
+            break
+
+        # Si el servidor dice cuánto esperar, se respeta.
+        wait = None
+
+        if response is not None:
+
+            retry_after = response.headers.get("Retry-After")
+
+            if retry_after:
+
+                try:
+                    wait = float(retry_after)
+
+                except ValueError:
+                    wait = None
+
+        if wait is None:
+
+            wait = min(
+                LLM_BACKOFF_BASE ** attempt,
+                LLM_BACKOFF_MAX,
+            )
+
+            # Jitter: en un barrido por lotes, varios repositorios chocan
+            # con el mismo límite y reintentarían todos a la vez.
+            wait += random.uniform(0, wait / 2)
+
+        print("")
+        print(
+            f"Intento {attempt}/{MAX_LLM_ATTEMPTS} falló. "
+            f"Reintentando en {wait:.1f}s."
+        )
+        print(last_error)
+
+        time.sleep(wait)
+
+    if response is None or response.status_code != 200:
 
         error(
-            "Z.ai devolvió un error.\n\n"
-            f"HTTP: {response.status_code}\n"
-            f"Respuesta:\n{details}"
+            "Z.ai no respondió correctamente tras "
+            f"{MAX_LLM_ATTEMPTS} intentos.\n\n"
+            f"{last_error}"
         )
 
     try:

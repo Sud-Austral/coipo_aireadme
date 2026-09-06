@@ -421,6 +421,15 @@ jobs:
           branch: ai-readme/update-readme
           delete-branch: true
 
+          # Solo el README entra al PR.
+          #
+          # Sin esto, cada PR arrastraba README_CANDIDATE.md y los tres
+          # archivos de readme_context/ (unas 1.300 lineas de JSON) al
+          # repositorio destino. Ese JSON quedaba commiteado y, en la corrida
+          # siguiente, el escaner lo leia como si fuera codigo del proyecto.
+          add-paths: |
+            README.md
+
           commit-message: "docs: update README automatically"
 
           title: "docs: actualización automática del README"

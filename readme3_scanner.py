@@ -24,6 +24,11 @@ from pathlib import Path
 # ============================================================
 
 IGNORED_DIRS = {
+    # Artefactos del propio generador. Sin esta linea, en la segunda corrida
+    # el escaner analiza la evidencia que el mismo dejo en la primera —un JSON
+    # que contiene literalmente los nombres de todas las tecnologias— como si
+    # fuera codigo del proyecto.
+    "readme_context",
     ".git",
     ".svn",
     ".hg",
@@ -50,6 +55,10 @@ IGNORED_DIRS = {
 IGNORED_FILES = {
     ".DS_Store",
     "Thumbs.db",
+    # Todo lo que escribe el generador queda fuera del analisis, por el mismo
+    # motivo que readme_context: su extension esta en TEXT_EXTENSIONS y se
+    # leeria a si mismo en la corrida siguiente.
+    "README_CANDIDATE.md",
 }
 
 TEXT_EXTENSIONS = {
