@@ -46,6 +46,13 @@ USES_PATTERN = re.compile(
     r"generate-readme\.yml@(?P<ref>\S+)"
 )
 
+# El `uses:` fija el archivo YAML del workflow reutilizable, pero el codigo
+# Python se descarga dentro con actions/checkout. Sin esta entrada, ese
+# checkout baja la rama por defecto del hub y el tag deja de fijar nada.
+ENGINE_REF_PATTERN = re.compile(
+    r"engine_ref:\s*(?P<ref>\S+)"
+)
+
 
 def clasificar_ref(ref: str) -> str:
     if ref == "main":
@@ -104,6 +111,20 @@ def auditar(
                 fila["tipo_ref"] = clasificar_ref(ref)
 
             fila["hereda_secretos"] = "secrets: inherit" in contenido
+
+            # El `uses:` fija el YAML; engine_ref fija el codigo Python que
+            # el workflow descarga. Si no coinciden, el repositorio ejecuta
+            # una version del motor distinta de la del workflow.
+            engine = ENGINE_REF_PATTERN.search(contenido)
+
+            fila["engine_ref"] = (
+                engine.group("ref") if engine else None
+            )
+
+            fila["ref_coherente"] = (
+                fila["engine_ref"] is not None
+                and fila["engine_ref"] == fila["ref"]
+            )
 
         # Solo interesa el residuo del bot donde no deberia haber corrido.
         if not repo.in_scope and fila["tiene_stub"]:
@@ -187,6 +208,35 @@ def informe(filas: list[dict]) -> int:
 
     print()
     print(f"   Stubs con 'secrets: inherit' todavia: {len(heredan)}")
+
+    incoherentes = [
+        f for f in filas
+        if f["tiene_stub"] and not f.get("ref_coherente")
+    ]
+
+    print()
+
+    if incoherentes:
+        print(
+            f"   AVISO: {len(incoherentes)} stub(s) no declaran engine_ref o"
+        )
+        print(
+            "   lo declaran distinto del `uses:`. En esos repositorios el tag"
+        )
+        print(
+            "   fija el workflow pero el motor se descarga de la rama por"
+        )
+        print("   defecto del hub.")
+        print()
+        for fila in incoherentes[:20]:
+            print(
+                f"      {fila['repositorio']:32s} "
+                f"uses=@{fila['ref']}  engine_ref={fila.get('engine_ref')}"
+            )
+    else:
+        print(
+            "   Todos los stubs declaran engine_ref coherente con su `uses:`."
+        )
 
     # ----------------------------------------------------------------
     # Faltantes en alcance

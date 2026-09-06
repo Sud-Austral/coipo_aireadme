@@ -2,6 +2,17 @@ name: Generate README
 
 on:
   workflow_call:
+    inputs:
+
+      engine_ref:
+        description: >
+          Version del motor a ejecutar. El stub de cada repositorio la
+          declara junto al `uses:`, para que la referencia fije tanto este
+          YAML como el codigo Python que se descarga mas abajo.
+          Si viene vacia se usa la rama por defecto del hub.
+        type: string
+        required: false
+        default: ""
 
 jobs:
   generate-readme:
@@ -50,33 +61,26 @@ jobs:
       # --------------------------------------------------
       # Resolver la version publicada del motor
       #
-      # El stub de cada repositorio invoca este workflow con una referencia
-      # fija (@v1). Pero eso solo fija ESTE archivo YAML: el codigo Python
-      # se descarga en el paso siguiente, y si ese checkout no declara
-      # `ref:` baja la rama por defecto.
+      # El stub invoca este workflow con una referencia fija (@v1), pero eso
+      # solo fija ESTE archivo YAML. El codigo Python se descarga en el paso
+      # siguiente, y un checkout sin `ref:` baja la rama por defecto: el tag
+      # congelaba el workflow mientras el motor seguia viniendo de main.
       #
-      # Es decir: el tag fijaba el workflow y el motor seguia viniendo de
-      # main. La disciplina de despliegue era aparente.
-      #
-      # `github.job_workflow_ref` vale, para un job de workflow reutilizable,
-      # "owner/repo/.github/workflows/archivo.yml@refs/tags/v1". Se toma lo
-      # que va despues de la arroba para checkoutear exactamente la misma
-      # version.
+      # No se puede derivar la referencia desde el contexto: se verifico que
+      # `github.job_workflow_ref` llega VACIO en las expresiones (solo existe
+      # en los claims del token OIDC). Por eso el stub la declara de forma
+      # explicita y esta es la unica fuente de verdad.
       # --------------------------------------------------
 
       - name: Resolver version del motor
         id: motor
         run: |
-          REFERENCIA="${{ github.job_workflow_ref }}"
+          VERSION="${{ inputs.engine_ref }}"
 
-          echo "job_workflow_ref = $REFERENCIA"
-
-          if [ -n "$REFERENCIA" ] && [ "${REFERENCIA#*@}" != "$REFERENCIA" ]; then
-            VERSION="${REFERENCIA##*@}"
-          else
-            # Ejecucion directa, no via workflow_call.
-            VERSION=""
-            echo "AVISO: no se pudo derivar la version; se usara la rama por defecto."
+          if [ -z "$VERSION" ]; then
+            echo "AVISO: el stub no declara engine_ref."
+            echo "Se usara la rama por defecto del hub, que puede no coincidir"
+            echo "con la version del workflow que se esta ejecutando."
           fi
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
