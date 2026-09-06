@@ -7,6 +7,8 @@ from pathlib import Path
 
 import requests
 
+from readme_merge import merge
+
 
 # ============================================================
 # CONFIGURACIÓN
@@ -836,16 +838,54 @@ def save_final(
     repo,
     content,
 ):
+    """
+    Guarda el README aplicando el contrato con el humano.
 
-    output = (
-        repo
-        / "README.md"
+    NUNCA sobrescribe documentacion escrita a mano. Medido sobre la flota:
+    de 14 README sustanciales, 12 los escribio una persona. Antes esto era
+    un write_text() directo, asi que el siguiente push los destruia.
+    """
+
+    output = repo / "README.md"
+
+    actual = get_existing_readme(repo) or None
+
+    resultado = merge(
+        actual,
+        content,
+        repo.name,
     )
+
+    print("")
+    print("=" * 70)
+    print(
+        f" CONTRATO CON EL HUMANO: {resultado.accion.upper()}"
+    )
+    print("=" * 70)
+    print("")
+    print(resultado.motivo)
+
+    if resultado.conflictos:
+        print("")
+        print(
+            "Bloques congelados por edicion humana: "
+            + ", ".join(resultado.conflictos)
+        )
+
+    if not resultado.escribe:
+
+        print("")
+        print(
+            "README.md NO fue modificado. La propuesta queda en "
+            f"{CANDIDATE_FILE_NAME}."
+        )
+
+        return None
 
     try:
 
         output.write_text(
-            content.strip() + "\n",
+            resultado.contenido.strip() + "\n",
             encoding="utf-8",
         )
 
@@ -1096,12 +1136,24 @@ def main():
     print("=" * 70)
     print("")
 
-    print(
-        f"Archivo:\n{final}"
-    )
+    if final is None:
+
+        print(
+            "README.md se dejo intacto por el contrato con el humano."
+        )
+
+        print(
+            f"Propuesta disponible en: {candidate}"
+        )
+
+    else:
+
+        print(
+            f"Archivo:\n{final}"
+        )
 
     print(
-        f"Tamaño: {len(readme):,} caracteres"
+        f"Tamaño de la propuesta: {len(readme):,} caracteres"
     )
 
     print("")
