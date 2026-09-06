@@ -75,6 +75,12 @@ on:
       - '.github/workflows/readme.yml'
 
   workflow_dispatch:
+    inputs:
+      insumos:
+        description: Reconstruir insumos/ desde el codigo
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   call-readme-generator:
@@ -92,6 +98,9 @@ jobs:
       # Las dos referencias tienen que coincidir. auditar_workflows.py lo
       # comprueba en toda la flota.
       engine_ref: {ref}
+
+      # Solo cuando se lanza a mano pidiendolo. Un push nunca lo dispara.
+      insumos: ${{{{ inputs.insumos || false }}}}
 """
 
 

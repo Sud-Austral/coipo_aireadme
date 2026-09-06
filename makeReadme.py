@@ -17,6 +17,13 @@ from pr_body import (
     construir as construir_informe,
     escribir as escribir_informe,
 )
+from insumos_inversos import (
+    crear_prompt as crear_prompt_insumos,
+    escribir as escribir_insumos,
+    hay_insumos_humanos,
+    parsear as parsear_insumos,
+    preparar as preparar_insumos,
+)
 from readme3_orphans import find_candidates, resumen as resumen_orphans
 from readme3_fingerprint import (
     compute as calcular_huella,
@@ -39,6 +46,76 @@ class _ResultadoSimple:
         self.motivo = motivo
         self.conflictos = []
         self.escribe = False
+
+
+def generar_insumos(repo, evidencia, contexto, api_key, model):
+    """
+    Reconstruye insumos/ desde el codigo, con su propia llamada al modelo.
+
+    Nunca sobrescribe un insumos/ levantado con personas: en ese caso lo
+    derivado va a un archivo aparte para contrastar.
+    """
+
+    try:
+
+        hallazgos, ignorados = preparar_insumos(
+            repo,
+            evidencia.get("files") or [],
+        )
+
+        prompt = crear_prompt_insumos(
+            contexto=contexto,
+            hallazgos_pii=hallazgos,
+            ignorados=ignorados,
+            nombre_repo=repo.name,
+            insumos_existentes=hay_insumos_humanos(repo),
+        )
+
+        respuesta = call_zai(
+            api_key,
+            model,
+            prompt,
+            "INSUMOS INVERSOS - RECONSTRUYENDO DESDE EL CODIGO",
+        )
+
+        partes = parsear_insumos(respuesta)
+
+        if not partes:
+            print("")
+            print(
+                "AVISO: la respuesta no traia los separadores esperados. "
+                "No se escribio ningun insumo."
+            )
+            return None
+
+        resultado = escribir_insumos(repo, partes, hallazgos)
+
+        print("")
+        print("=" * 70)
+        print(" INSUMOS INVERSOS")
+        print("=" * 70)
+        print("")
+        print(resultado["motivo"])
+        print("")
+        print("Escritos: " + ", ".join(resultado["escritos"]))
+
+        if "INFORME" in partes:
+            print("")
+            print(partes["INFORME"][:2000])
+
+        return resultado
+
+    except SystemExit:
+        print("")
+        print(
+            "AVISO: no se pudieron generar los insumos. La corrida sigue."
+        )
+        return None
+
+    except Exception as exc:
+        print("")
+        print(f"AVISO: no se pudieron generar los insumos: {exc}")
+        return None
 
 
 def generar_delete_files(repo, evidencia, veredicto=None):
@@ -1084,6 +1161,11 @@ def main():
     forzar = "--force" in banderas
     proponer = "--proponer" in banderas
 
+    # Los insumos inversos son un artefacto pesado y de vida larga: se
+    # generan una vez y se corrigen a mano. No tiene sentido rehacerlos en
+    # cada push, asi que van por peticion explicita.
+    con_insumos = "--insumos" in banderas
+
     if len(argumentos) != 1:
 
         print("")
@@ -1102,6 +1184,12 @@ def main():
         )
         print(
             "               humano vaya a dejar el README intacto."
+        )
+        print(
+            "  --insumos    Reconstruir insumos/ desde el codigo:"
+        )
+        print(
+            "               00-PROBLEMA.md, 01-SOLUCION.md y MANIFIESTO.yaml."
         )
         print("")
 
@@ -1187,6 +1275,19 @@ def main():
     # --------------------------------------------------------
     # CORTES ANTES DE GASTAR UNA LLAMADA AL MODELO
     # --------------------------------------------------------
+
+    # Los insumos son independientes del README: un repositorio con README
+    # escrito a mano igual se beneficia de tener 00-PROBLEMA y 01-SOLUCION.
+    # Por eso este paso va ANTES de los cortes.
+    if con_insumos:
+
+        generar_insumos(
+            repo=repo,
+            evidencia=evidencia,
+            contexto=context,
+            api_key=api_key,
+            model=model,
+        )
 
     accion_prevista = decidir_accion(existing_readme, repo.name)
 

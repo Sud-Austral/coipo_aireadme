@@ -14,6 +14,15 @@ on:
         required: false
         default: ""
 
+      insumos:
+        description: >
+          Reconstruir insumos/ desde el codigo: 00-PROBLEMA.md,
+          01-SOLUCION.md y MANIFIESTO.yaml. Es un artefacto pesado y de vida
+          larga, que se corrige a mano, asi que no se regenera en cada push.
+        type: boolean
+        required: false
+        default: false
+
 jobs:
   generate-readme:
     name: Generate and validate README
@@ -237,7 +246,12 @@ jobs:
           echo "GENERANDO README"
           echo "======================================"
 
-          python ai-readme/makeReadme.py target
+          BANDERAS=""
+          if [ "${{ inputs.insumos }}" = "true" ]; then
+            BANDERAS="--insumos"
+          fi
+
+          python ai-readme/makeReadme.py target $BANDERAS
 
       # --------------------------------------------------
       # 11. Verificar README generado
@@ -494,6 +508,7 @@ jobs:
           add-paths: |
             README.md
             delete_files.md
+            insumos/
 
           commit-message: "docs: update README automatically"
 
