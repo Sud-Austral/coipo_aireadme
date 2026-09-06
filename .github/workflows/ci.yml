@@ -32,7 +32,9 @@ jobs:
           echo "Archivos trackeados:"
           git ls-files | wc -l
 
-          patron='github_pat_[A-Za-z0-9_]{20,}|ghp_[A-Za-z0-9]{30,}|gho_[A-Za-z0-9]{30,}|github_pat_11'
+          # Sin alternativas de prefijo corto: una de dos caracteres hace
+          # que este mismo archivo se detecte a si mismo.
+          patron='github_pat_[A-Za-z0-9_]{20,}|ghp_[A-Za-z0-9]{30,}|gho_[A-Za-z0-9]{30,}'
 
           if git grep -InE "$patron" -- $(git ls-files); then
             echo ""
