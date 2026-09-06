@@ -88,6 +88,7 @@ def procesar(
     repo: Repository,
     ref: str,
     dry_run: bool,
+    crear_faltantes: bool = False,
 ) -> str:
 
     deseado = construir_stub(ref)
@@ -99,7 +100,34 @@ def procesar(
     )
 
     if actual is None:
-        return "sin stub"
+
+        if not crear_faltantes:
+            return "sin stub"
+
+        if dry_run:
+            return "se instalaria"
+
+        respuesta = client.put_file(
+            repository=repo.full_name,
+            path=STUB_PATH,
+            branch=repo.default_branch,
+            content=deseado,
+            sha=None,
+            message=(
+                "ci: instalar el generador de README\n"
+                "\n"
+                "Llama al workflow reutilizable del hub, fijado a un tag.\n"
+                "No genera nada hasta que haya un push o un dispatch."
+            ),
+        )
+
+        if respuesta.status_code not in (200, 201):
+            return (
+                f"ERROR {respuesta.status_code}: "
+                f"{respuesta.text[:120]}"
+            )
+
+        return "instalado"
 
     if normalize_content(actual) == normalize_content(deseado):
         return "ya al dia"
@@ -158,6 +186,15 @@ def main() -> int:
     )
 
     parser.add_argument(
+        "--crear-faltantes",
+        action="store_true",
+        help=(
+            "Instalar el stub tambien donde no exista. Sin esta bandera "
+            "solo se actualizan los que ya lo tienen."
+        ),
+    )
+
+    parser.add_argument(
         "--lote",
         type=int,
         default=0,
@@ -206,6 +243,7 @@ def main() -> int:
             repo,
             argumentos.ref,
             argumentos.dry_run,
+            argumentos.crear_faltantes,
         )
 
         conteo[estado] = conteo.get(estado, 0) + 1

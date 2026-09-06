@@ -226,43 +226,20 @@ def get_evidence_commands(
 
     values = set()
 
-    dependencies = evidence.get(
-        "dependencies",
-        {}
-    )
+    # Los scripts npm ahora viajan en el JSON de evidencia.
+    #
+    # Antes esto buscaba analysis[*]["package_json"], una clave que
+    # analyze_files() nunca escribia — solo escribe python, javascript y
+    # sql. Como el conjunto quedaba vacio, el bloque que compara comandos
+    # nunca llegaba a ejecutarse y los comandos inventados no se detectaban.
+    for script in evidence.get("npm_scripts", []):
 
-    # Los scripts NPM están contenidos normalmente
-    # dentro del análisis de package.json.
-    analysis = evidence.get(
-        "analysis",
-        {}
-    )
+        if isinstance(script, dict):
 
-    for data in analysis.values():
+            command = script.get("command")
 
-        package = data.get(
-            "package_json",
-            {}
-        )
-
-        for script in package.get(
-            "scripts",
-            []
-        ):
-
-            if isinstance(
-                script,
-                dict
-            ):
-
-                command = script.get(
-                    "command"
-                )
-
-                if command:
-                    values.add(
-                        command
-                    )
+            if command:
+                values.add(command)
 
     # Compatibilidad adicional:
     # algunas implementaciones pueden guardar

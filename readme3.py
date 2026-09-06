@@ -58,7 +58,6 @@ from readme3_scanner import scan
 from readme3_analyzers import (
     analyze_files,
     dependencies,
-    detect_capabilities,
     detect_env_vars,
     detect_technologies,
 )
@@ -67,6 +66,14 @@ from readme3_evidence import (
     build_evidence_json,
     existing_readme,
     generate_context,
+)
+
+from readme3_manifests import discover_manifests
+
+from readme3_provenance import (
+    classify_capabilities,
+    classify_technologies,
+    concluyentes,
 )
 
 
@@ -171,9 +178,32 @@ def main():
         "[3/6] Detectando tecnologías..."
     )
 
-    technologies = detect_technologies(
+    # Manifiestos a cualquier profundidad. En los proyectos con el front en
+    # una subcarpeta, esto es la diferencia entre entregar la lista real de
+    # dependencias o entregar una seccion vacia.
+    manifests = discover_manifests(
+        repo,
+        files,
+    )
+
+    # El detector por regex se conserva, pero degradado: alimenta el nivel
+    # "mentioned", que se emite marcado como no concluyente.
+    mentioned = detect_technologies(
         files,
         repo,
+    )
+
+    technologies = classify_technologies(
+        analysis,
+        manifests,
+        files,
+        repo,
+        mentioned=mentioned,
+    )
+
+    print(
+        f"      {len(manifests)} manifiestos, "
+        f"{len(concluyentes(technologies))} tecnologías con procedencia."
     )
 
     # ========================================================
@@ -193,9 +223,15 @@ def main():
         {},
     )
 
-    capabilities = detect_capabilities(
+    # Las señales de capacidad exigen corroboración estructural: una
+    # tecnología con procedencia o una dependencia declarada. Sin eso, una
+    # palabra suelta en un comentario bastaba para atribuir cartografía o
+    # machine learning a cualquier repositorio.
+    capabilities = classify_capabilities(
         files,
         repo,
+        concluyentes(technologies),
+        manifests,
     )
 
     readme = existing_readme(
@@ -219,6 +255,7 @@ def main():
         env_vars,
         capabilities,
         readme,
+        manifests,
     )
 
     evidence = build_evidence_json(
@@ -230,6 +267,7 @@ def main():
         env_vars,
         capabilities,
         readme,
+        manifests,
     )
 
     # ========================================================

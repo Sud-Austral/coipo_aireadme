@@ -325,6 +325,7 @@ def generate_context(
     env_vars,
     capabilities,
     readme,
+    manifests=None,
 ):
 
     lines = []
@@ -392,101 +393,185 @@ def generate_context(
 
     if technologies:
 
-        tech_values = []
+        # Las tecnologias se separan por PROCEDENCIA de la evidencia.
+        #
+        # declared / imported / vendored son concluyentes y llevan su cita.
+        # mentioned significa que el nombre aparece en algun texto y nada
+        # mas: se emite aparte y marcado, para que no se documente como si
+        # el proyecto usara esa tecnologia.
 
-        for name, info in sorted(
-            technologies.items()
-        ):
+        firmes = []
+        solo_mencionadas = []
 
-            tech_values.append(
-                f"{name}[{info['confidence']}]"
+        for name, info in sorted(technologies.items()):
+
+            procedencia = info.get("provenance", "mentioned")
+
+            if procedencia == "mentioned":
+                solo_mencionadas.append(name)
+                continue
+
+            evidencia = (info.get("evidence") or [{}])[0]
+
+            cita = evidencia.get("file", "")
+            linea = evidencia.get("line")
+
+            if cita and linea:
+                cita = f"{cita}:{linea}"
+
+            firmes.append(
+                f"{name}[{procedencia}"
+                + (f":{cita}" if cita else "")
+                + "]"
             )
 
-        lines.append(
-            "TECH=" +
-            ",".join(
-                tech_values[:25]
+        if firmes:
+            lines.append("TECH=" + ",".join(firmes[:25]))
+
+        if solo_mencionadas:
+            lines.extend(
+                [
+                    "",
+                    "## TECH_ONLY_MENTIONED",
+                    "",
+                    "El nombre aparece en algun texto del repositorio, pero "
+                    "no esta declarado en ningun manifiesto, no se importa "
+                    "en el codigo y no se carga como recurso.",
+                    "NO es evidencia de que el proyecto use esta tecnologia. "
+                    "No la documentes.",
+                    "",
+                    ",".join(sorted(solo_mencionadas)[:25]),
+                ]
             )
-        )
 
     # --------------------------------------------------------
     # DEPENDENCIAS
     # --------------------------------------------------------
 
-    npm_deps = deps.get(
-        "npm",
-        []
-    )
+    # Las dependencias se leen de los manifiestos descubiertos a cualquier
+    # profundidad. Antes solo se miraba la raiz, asi que en los proyectos
+    # con el front en una subcarpeta esta seccion llegaba VACIA al modelo
+    # mientras se le entregaban tecnologias detectadas por regex.
 
-    python_deps = deps.get(
-        "python",
-        []
-    )
-
-    if npm_deps:
+    if manifests:
 
         lines.extend(
             [
                 "",
-                "## NPM_DEPENDENCIES",
-            ]
-        )
-
-        lines.append(
-            ",".join(
-                f"{item['name']}@{item['version']}"
-                for item in npm_deps[:50]
-            )
-        )
-
-    if python_deps:
-
-        lines.extend(
-            [
+                "## MANIFESTS",
                 "",
-                "## PYTHON_DEPENDENCIES",
+                "Manifiestos encontrados. Son la evidencia mas fiable que",
+                "existe sobre el stack: lo que el proyecto DECLARA usar.",
             ]
         )
 
-        lines.append(
-            ",".join(
-                item["value"]
-                for item in python_deps[:50]
+        for manifiesto in manifests[:20]:
+
+            marca = " [TERCEROS]" if manifiesto["third_party"] else ""
+
+            lines.append(
+                f"{manifiesto['path']} ({manifiesto['kind']}, "
+                f"{len(manifiesto['dependencies'])} deps){marca}"
             )
-        )
 
-    # --------------------------------------------------------
-    # SCRIPTS
-    # --------------------------------------------------------
+        propios = [
+            m for m in manifests if not m["third_party"]
+        ]
 
-    package_path = repo / "package.json"
+        npm_items = [
+            (d, m["path"])
+            for m in propios if m["kind"] == "npm"
+            for d in m["dependencies"]
+        ]
 
-    if package_path.exists():
+        py_items = [
+            (d, m["path"])
+            for m in propios if m["kind"] == "python"
+            for d in m["dependencies"]
+        ]
 
-        package_info = analyze_package_json(
-            package_path,
-            repo,
-        )
+        if npm_items:
 
-        scripts = package_info.get(
-            "scripts",
-            {},
-        )
-
-        if scripts:
+            lines.extend(["", "## NPM_DEPENDENCIES"])
 
             lines.extend(
-                [
-                    "",
-                    "## NPM_SCRIPTS",
-                ]
+                f"{d['name']}@{d['version']} [{ruta}"
+                + (f":{d['line']}" if d.get("line") else "")
+                + "]"
+                for d, ruta in npm_items[:60]
             )
 
-            for name, info in scripts.items():
+        if py_items:
 
-                lines.append(
-                    f"{name}={info['command']}"
+            lines.extend(["", "## PYTHON_DEPENDENCIES"])
+
+            lines.extend(
+                f"{d['name']}{d['version'] or ''} [{ruta}"
+                + (f":{d['line']}" if d.get("line") else "")
+                + "]"
+                for d, ruta in py_items[:60]
+            )
+
+        scripts_items = [
+            (s, m["path"])
+            for m in propios
+            for s in m.get("scripts", [])
+        ]
+
+        if scripts_items:
+
+            lines.extend(["", "## NPM_SCRIPTS"])
+
+            lines.extend(
+                f"{s['name']}={s['command']} [{ruta}]"
+                for s, ruta in scripts_items[:40]
+            )
+
+    else:
+
+        # Camino anterior, por compatibilidad si se llama sin manifiestos.
+        npm_deps = deps.get("npm", [])
+        python_deps = deps.get("python", [])
+
+        if npm_deps:
+
+            lines.extend(["", "## NPM_DEPENDENCIES"])
+
+            lines.append(
+                ",".join(
+                    f"{item['name']}@{item['version']}"
+                    for item in npm_deps[:50]
                 )
+            )
+
+        if python_deps:
+
+            lines.extend(["", "## PYTHON_DEPENDENCIES"])
+
+            lines.append(
+                ",".join(
+                    item["value"]
+                    for item in python_deps[:50]
+                )
+            )
+
+        package_path = repo / "package.json"
+
+        if package_path.exists():
+
+            package_info = analyze_package_json(
+                package_path,
+                repo,
+            )
+
+            scripts = package_info.get("scripts", {})
+
+            if scripts:
+
+                lines.extend(["", "## NPM_SCRIPTS"])
+
+                for name, info in scripts.items():
+                    lines.append(f"{name}={info['command']}")
 
     # --------------------------------------------------------
     # ESTRUCTURA
@@ -869,6 +954,7 @@ def build_evidence_json(
     env_vars,
     capabilities,
     readme,
+    manifests=None,
 ):
 
     return {
@@ -918,6 +1004,19 @@ def build_evidence_json(
         "capability_signals": capabilities,
 
         "analysis": analysis,
+
+        "manifests": manifests or [],
+
+        # Los scripts npm existian dentro de analyze_package_json pero solo
+        # se renderizaban como texto y nunca entraban al JSON. Por eso
+        # get_evidence_commands en validate_readme.py buscaba una clave que
+        # nadie escribia y la validacion de comandos era codigo muerto.
+        "npm_scripts": [
+            dict(script, manifest=manifiesto["path"])
+            for manifiesto in (manifests or [])
+            if not manifiesto.get("third_party")
+            for script in manifiesto.get("scripts", [])
+        ],
 
         "existing_readme": {
             "exists": bool(readme),

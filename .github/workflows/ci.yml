@@ -82,6 +82,18 @@ jobs:
         run: |
           python -m compileall -q . && echo "Todos los modulos compilan."
 
+      # ------------------------------------------------------------
+      # Red de seguridad del motor de deteccion.
+      #
+      # El fixture negativo es el propio repositorio: contiene el
+      # diccionario de nombres de tecnologias, asi que un detector basado
+      # en texto se atribuye 23 tecnologias de 23 y 7 capacidades de 7.
+      # El test exige cero.
+      # ------------------------------------------------------------
+      - name: Golden set
+        run: |
+          python -m pytest tests/ -q
+
       - name: Validar YAML de los workflows
         run: |
           python - <<'PY'

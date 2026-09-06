@@ -70,7 +70,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+
+          # Desde requirements.txt y no `pip install requests` suelto: el
+          # hub se despliega a la flota por tag, asi que una dependencia
+          # flotante convierte cualquier release upstream en un cambio no
+          # revisado en todos los repositorios en alcance.
+          pip install -r ai-readme/requirements.txt
 
       # --------------------------------------------------
       # 5. Verificar repositorios
