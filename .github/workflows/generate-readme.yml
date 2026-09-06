@@ -47,12 +47,48 @@ jobs:
       # 2. Descargar el repositorio maestro AI README
       # --------------------------------------------------
 
+      # --------------------------------------------------
+      # Resolver la version publicada del motor
+      #
+      # El stub de cada repositorio invoca este workflow con una referencia
+      # fija (@v1). Pero eso solo fija ESTE archivo YAML: el codigo Python
+      # se descarga en el paso siguiente, y si ese checkout no declara
+      # `ref:` baja la rama por defecto.
+      #
+      # Es decir: el tag fijaba el workflow y el motor seguia viniendo de
+      # main. La disciplina de despliegue era aparente.
+      #
+      # `github.job_workflow_ref` vale, para un job de workflow reutilizable,
+      # "owner/repo/.github/workflows/archivo.yml@refs/tags/v1". Se toma lo
+      # que va despues de la arroba para checkoutear exactamente la misma
+      # version.
+      # --------------------------------------------------
+
+      - name: Resolver version del motor
+        id: motor
+        run: |
+          REFERENCIA="${{ github.job_workflow_ref }}"
+
+          echo "job_workflow_ref = $REFERENCIA"
+
+          if [ -n "$REFERENCIA" ] && [ "${REFERENCIA#*@}" != "$REFERENCIA" ]; then
+            VERSION="${REFERENCIA##*@}"
+          else
+            # Ejecucion directa, no via workflow_call.
+            VERSION=""
+            echo "AVISO: no se pudo derivar la version; se usara la rama por defecto."
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Motor a descargar: ${VERSION:-<rama por defecto>}"
+
       - name: Checkout AI README
         uses: actions/checkout@v4
         with:
           repository: Sud-Austral/coipo_aireadme
           path: ai-readme
           fetch-depth: 1
+          ref: ${{ steps.motor.outputs.version }}
 
       # --------------------------------------------------
       # 3. Configurar Python
