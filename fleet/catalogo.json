@@ -1,0 +1,1745 @@
+{
+  "publicos": [
+    {
+      "nombre": "COIPO_INCENDIO_PRESUPUESTO",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/COIPO_INCENDIO_PRESUPUESTO",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:11Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 0,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 3
+      },
+      "lenguajes": {
+        "HTML": 1,
+        "YAML": 1
+      },
+      "tecnologias": {},
+      "manifiestos": [],
+      "dependencias": [],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        ".github/workflows/readme.yml"
+      ]
+    },
+    {
+      "nombre": "coipo_canal_denuncia_consulta",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_canal_denuncia_consulta",
+      "descripcion": "CON003",
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:23:39Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 39,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 24
+      },
+      "lenguajes": {
+        "React": 9,
+        "Markdown": 4,
+        "YAML": 2,
+        "JSON": 2,
+        "JavaScript": 2,
+        "Batch": 1,
+        "HTML": 1,
+        "CSS": 1
+      },
+      "tecnologias": {
+        "Vite": "declared",
+        "React": "declared",
+        "Tailwind": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "@vitejs/plugin-react^6.0.3",
+        "lucide-react^1.27.0",
+        "react^19.2.7",
+        "react-dom^19.2.7",
+        "react-router-dom^7.18.2",
+        "tailwindcss^4.3.3",
+        "@tailwindcss/vite^4.3.3",
+        "vite^8.1.1"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "frontend/package.json",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml",
+        "CONFIG_GITHUB_PAGES.md"
+      ]
+    },
+    {
+      "nombre": "coipo_chatcoip",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_chatcoip",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:23:43Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 18,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 3
+      },
+      "lenguajes": {
+        "Markdown": 1,
+        "YAML": 1
+      },
+      "tecnologias": {},
+      "manifiestos": [],
+      "dependencias": [],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "README.md",
+        ".github/workflows/readme.yml"
+      ]
+    },
+    {
+      "nombre": "coipo_criterio_fiscalia",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_criterio_fiscalia",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:23:51Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 27,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 49
+      },
+      "lenguajes": {
+        "Text": 20,
+        "Markdown": 11,
+        "Python": 8,
+        "JSON": 4,
+        "YAML": 1,
+        "JavaScript": 1,
+        "SQL": 1,
+        "CSS": 1
+      },
+      "tecnologias": {},
+      "manifiestos": [],
+      "dependencias": [],
+      "endpoints": [],
+      "tablas": [
+        "organo",
+        "documento",
+        "criterio",
+        "cita",
+        "descriptor",
+        "documento_descriptor",
+        "norma",
+        "criterio_norma",
+        "relacion",
+        "bitacora",
+        "PUBLIC",
+        "ON",
+        "documento",
+        "organo",
+        "criterio",
+        "cita",
+        "documento_descriptor",
+        "norma",
+        "norma",
+        "criterio_norma",
+        "criterio",
+        "documento",
+        "relacion",
+        "criterio",
+        "documento"
+      ],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "README.md",
+        ".github/workflows/readme.yml",
+        "INSUMO/docs/02-MODELO-DE-DATOS.md"
+      ]
+    },
+    {
+      "nombre": "coipo_repositorio",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_repositorio",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:36Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 21,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 25
+      },
+      "lenguajes": {
+        "Markdown": 7,
+        "React": 4,
+        "JSON": 3,
+        "YAML": 2,
+        "JavaScript": 2,
+        "CSS": 2,
+        "HTML": 1
+      },
+      "tecnologias": {
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "react^19.2.8",
+        "react-dom^19.2.8",
+        "@types/react^19.2.17",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.4",
+        "oxlint^1.75.0",
+        "vite^8.2.0"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "frontend/package.json",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml"
+      ]
+    },
+    {
+      "nombre": "coipo_sitra",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_sitra",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:47Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 15,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 7
+      },
+      "lenguajes": {
+        "Text": 2,
+        "Markdown": 1,
+        "YAML": 1,
+        "HTML": 1
+      },
+      "tecnologias": {},
+      "manifiestos": [],
+      "dependencias": [],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "README.md",
+        ".github/workflows/readme.yml"
+      ]
+    },
+    {
+      "nombre": "coipo_web_arbolizacion",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_web_arbolizacion",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:55Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 26,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 1091
+      },
+      "lenguajes": {
+        "JSON": 8,
+        "React": 7,
+        "Python": 7,
+        "Markdown": 4,
+        "JavaScript": 4,
+        "YAML": 2,
+        "HTML": 2,
+        "SQL": 2
+      },
+      "tecnologias": {
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared",
+        "Pandas": "imported",
+        "PostgreSQL": "imported"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "react^19.2.8",
+        "react-dom^19.2.8",
+        "@types/react^19.2.18",
+        "@types/react-dom^19.2.4",
+        "@vitejs/plugin-react^6.1.0",
+        "oxlint^1.79.0",
+        "vite^8.2.2"
+      ],
+      "endpoints": [],
+      "tablas": [
+        "vocabulario",
+        "region",
+        "taxon",
+        "especie",
+        "nombre_comun",
+        "especie_region",
+        "conservacion",
+        "fotografia",
+        "fuente",
+        "especie_fuente",
+        "especie_historial",
+        "en",
+        "vocabulario",
+        "vocabulario",
+        "region",
+        "y",
+        "ON",
+        "especie",
+        "LATERAL",
+        "nombre_comun",
+        "fotografia",
+        "especie_fuente",
+        "nombre_comun",
+        "nombre_comun",
+        "vocabulario",
+        "vocabulario",
+        "vocabulario",
+        "vocabulario",
+        "vocabulario",
+        "especie_region",
+        "region",
+        "fotografia",
+        "especie",
+        "taxon",
+        "conservacion",
+        "v_completitud",
+        "especie",
+        "especie_region",
+        "especie",
+        "especie",
+        "especie",
+        "conservacion",
+        "especie_region",
+        "v_completitud",
+        "vocabulario",
+        "region",
+        "taxon",
+        "especie",
+        "nombre_comun",
+        "especie_region",
+        "conservacion",
+        "fotografia",
+        "fuente",
+        "especie_fuente",
+        "especie_historial",
+        "en",
+        "vocabulario",
+        "vocabulario",
+        "region",
+        "y"
+      ],
+      "variables_entorno": [
+        "BASE_URL",
+        "VITE_FOTOS_BASE"
+      ],
+      "archivos_clave": [
+        "frontend/package.json",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml",
+        "INSUMO/etapa1-contrato-datos/schema.sql",
+        "INSUMO/sitio-arbolado-urbano/schema.sql",
+        "frontend/public/fotos/luma-apiculata/285-1000.avif",
+        "frontend/public/fotos/luma-apiculata/285-1800.avif",
+        "frontend/public/fotos/luma-apiculata/285-400.avif",
+        "frontend/public/fotos/luma-apiculata/286-1000.avif",
+        "frontend/public/fotos/luma-apiculata/286-1800.avif",
+        "frontend/public/fotos/luma-apiculata/286-400.avif",
+        "frontend/public/fotos/luma-apiculata/287-1000.avif",
+        "frontend/public/fotos/luma-apiculata/287-1800.avif",
+        "frontend/public/fotos/luma-apiculata/287-400.avif",
+        "frontend/public/fotos/luma-apiculata/288-1000.avif",
+        "frontend/public/fotos/luma-apiculata/288-1800.avif",
+        "frontend/public/fotos/luma-apiculata/288-400.avif",
+        "frontend/public/fotos/luma-apiculata/289-1000.avif",
+        "frontend/public/fotos/luma-apiculata/289-1800.avif",
+        "frontend/public/fotos/luma-apiculata/289-400.avif",
+        "frontend/public/fotos/luma-apiculata/290-1000.avif"
+      ]
+    },
+    {
+      "nombre": "coipo_aireadme",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_aireadme",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T23:50:12Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 18,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": true,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 38
+      },
+      "lenguajes": {
+        "Python": 27,
+        "YAML": 5,
+        "Markdown": 2,
+        "JSON": 1,
+        "Text": 1
+      },
+      "tecnologias": {},
+      "manifiestos": [
+        "requirements.txt"
+      ],
+      "dependencias": [
+        "requests==2.32.3",
+        "PyYAML==6.0.2",
+        "pytest==8.3.4"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "requirements.txt",
+        "README.md",
+        ".github/workflows/ci.yml",
+        ".github/workflows/fleet-census.yml",
+        ".github/workflows/fleet-sweep.yml",
+        ".github/workflows/generate-readme.yml",
+        ".github/workflows/readme.yml",
+        "api.json",
+        "auditar_workflows.py"
+      ]
+    },
+    {
+      "nombre": "COIPO_NEXE",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/COIPO_NEXE",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:26Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 14,
+        "readme_placeholder": true,
+        "tiene_license": false,
+        "tiene_tests": true,
+        "tiene_ci": true,
+        "tiene_docker": true,
+        "tiene_gitignore": true,
+        "archivos": 118
+      },
+      "lenguajes": {
+        "Python": 26,
+        "TypeScript": 26,
+        "CSS": 12,
+        "React+TS": 11,
+        "Markdown": 8,
+        "JSON": 6,
+        "YAML": 5,
+        "HTML": 5
+      },
+      "tecnologias": {
+        "FastAPI": "declared",
+        "SQLAlchemy": "declared",
+        "PostgreSQL": "declared",
+        "Leaflet": "declared",
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared",
+        "Docker": "declared"
+      },
+      "manifiestos": [
+        "docker-compose.yml",
+        "backend/Dockerfile",
+        "backend/requirements.txt",
+        "collector/Dockerfile",
+        "frontend/Dockerfile",
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "python:3.12-slim",
+        "fastapi>=0.115,<1.0",
+        "uvicorn[standard]>=0.32,<1.0",
+        "sqlalchemy>=2.0,<3.0",
+        "psycopg2-binary>=2.9,<3.0",
+        "pydantic-settings>=2.6,<3.0",
+        "requests>=2.32,<3.0",
+        "python:3.12-slim",
+        "node:22-slim",
+        "nginx:1.27-alpine",
+        "leaflet^1.9.4",
+        "lucide-react^0.525.0",
+        "react^19.2.7",
+        "react-dom^19.2.7",
+        "react-leaflet^5.0.0",
+        "@testing-library/jest-dom^6.6.3",
+        "@testing-library/react^16.3.0",
+        "@types/leaflet^1.9.20",
+        "@types/node^22.15.0",
+        "@types/react^19.2.17",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.3",
+        "cross-env^7.0.3",
+        "jsdom^26.1.0",
+        "oxlint^1.71.0",
+        "typescript^5.8.3",
+        "vite^8.1.1",
+        "vitest^3.2.4"
+      ],
+      "endpoints": [
+        "GET /api/estado-ingesta",
+        "GET /api/exportar",
+        "GET /api/posiciones/incremental",
+        "GET /api/posiciones",
+        "GET /api/recursos",
+        "GET /api/recursos/{esn}",
+        "GET /health",
+        "FETCH ${API_BASE}/${ruta}${sufijo}"
+      ],
+      "tablas": [
+        "posicion",
+        "recurso",
+        "estado_ingesta",
+        "usando",
+        "compara",
+        "estado_ingesta"
+      ],
+      "variables_entorno": [
+        "NEXE_API_KEY",
+        "NEXE_BASE_URL",
+        "SCHEMA_SQL_PATH",
+        "VITE_API_BASE",
+        "VITE_DEMO"
+      ],
+      "archivos_clave": [
+        "backend/Dockerfile",
+        "collector/Dockerfile",
+        "docker-compose.yml",
+        "frontend/Dockerfile",
+        "backend/requirements.txt",
+        "frontend/package.json",
+        ".env.example",
+        "README.md",
+        "frontend/.env.example",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy-prod.yml",
+        "db/schema.sql",
+        "docker-compose.dev.yml",
+        "frontend/vite.config.ts",
+        ".dockerignore",
+        ".github/workflows/despliegue-pages.yml",
+        ".github/workflows/readme.yml",
+        "INSUMO_PRODUCCION2/DOCKER.md",
+        "INSUMO_PRODUCCION2/fastapi-postgresql-conexion.md",
+        "INSUMO_PRODUCCION2/guia-8-prompt-checklist-pre-deploy.md",
+        "backend/app/config.py",
+        "backend/app/db/__init__.py",
+        "backend/app/db/bootstrap.py",
+        "backend/app/db/consultas.py"
+      ]
+    },
+    {
+      "nombre": "coipo_moodle",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_moodle",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:19Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 31,
+        "readme_placeholder": true,
+        "tiene_license": true,
+        "tiene_tests": true,
+        "tiene_ci": true,
+        "tiene_docker": true,
+        "tiene_gitignore": true,
+        "archivos": 1358
+      },
+      "lenguajes": {
+        "PHP": 580,
+        "SCSS": 153,
+        "HTML": 50,
+        "CSS": 48,
+        "JSON": 40,
+        "JavaScript": 36,
+        "Markdown": 29,
+        "YAML": 11
+      },
+      "tecnologias": {
+        "Docker": "declared"
+      },
+      "manifiestos": [
+        "docker-compose.yml",
+        "Dockerfile"
+      ],
+      "dependencias": [
+        "php:8.3-apache"
+      ],
+      "endpoints": [
+        "FETCH ${M.cfg.wwwroot}/theme/boost_magnific/_editor/model/?lang=${frontpage.lang}"
+      ],
+      "tablas": [
+        "PUBLIC"
+      ],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "Dockerfile",
+        "docker-compose.yml",
+        "plugins/blocks/configurable_reports/README.txt",
+        "plugins/blocks/configurable_reports/lib/pChart2/README.md",
+        ".env.example",
+        "README.md",
+        "manuales/README.md",
+        "plugins/admin/tool/mergeusers/Makefile",
+        "plugins/admin/tool/mergeusers/README.md",
+        "plugins/mod/customcert/README.md",
+        "plugins/theme/academi/README.md",
+        "plugins/theme/boost_magnific/README.md",
+        "plugins/blocks/configurable_reports/db/services.php",
+        "plugins/theme/boost_magnific/settings/login_config.php",
+        ".github/workflows/deploy-prod.yml",
+        "docker-compose.migracion.yml",
+        "docker/config.php",
+        "plugins/admin/tool/mergeusers/classes/local/db_config.php",
+        "plugins/admin/tool/mergeusers/classes/local/default_db_config.php",
+        "plugins/admin/tool/mergeusers/classes/local/settable_db_config.php",
+        "plugins/admin/tool/mergeusers/tests/db_config_test.php",
+        "plugins/admin/tool/mergeusers/tests/settable_db_config_test.php",
+        "plugins/blocks/configurable_reports/.github/workflows/ci.yml",
+        "plugins/blocks/configurable_reports/db/access.php",
+        "plugins/blocks/configurable_reports/db/install.xml"
+      ]
+    },
+    {
+      "nombre": "coipo_gestion_expediente",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_gestion_expediente",
+      "descripcion": "CON004 - Gestion de Expedientes - Raul Fiscalia",
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:08Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 840,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 26
+      },
+      "lenguajes": {
+        "React": 13,
+        "Markdown": 2,
+        "YAML": 2,
+        "JSON": 2,
+        "JavaScript": 2,
+        "Batch": 1,
+        "HTML": 1,
+        "CSS": 1
+      },
+      "tecnologias": {
+        "Vite": "declared",
+        "React": "declared",
+        "Tailwind": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "@vitejs/plugin-react^6.0.3",
+        "lucide-react^1.27.0",
+        "react^19.2.7",
+        "react-dom^19.2.7",
+        "react-router-dom^7.18.2",
+        "recharts^3.10.1",
+        "tailwindcss^4.3.3",
+        "@tailwindcss/vite^4.3.3",
+        "vite^8.1.1"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "frontend/package.json",
+        "README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml",
+        "frontend/src/pages/Workflow.jsx"
+      ]
+    },
+    {
+      "nombre": "COIPO_DASHBOARDSAFF",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/COIPO_DASHBOARDSAFF",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:23:52Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 2789,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 39
+      },
+      "lenguajes": {
+        "React+TS": 16,
+        "TypeScript": 9,
+        "JSON": 3,
+        "Markdown": 2,
+        "HTML": 2,
+        "JavaScript": 2,
+        "YAML": 2,
+        "Python": 1
+      },
+      "tecnologias": {
+        "React": "declared",
+        "Vite": "declared",
+        "Tailwind": "declared",
+        "Node.js": "declared",
+        "Pandas": "imported",
+        "NumPy": "imported"
+      },
+      "manifiestos": [
+        "package.json"
+      ],
+      "dependencias": [
+        "@tanstack/react-query^5.0.0",
+        "clsx^2.1.0",
+        "lucide-react^0.363.0",
+        "react^18.2.0",
+        "react-dom^18.2.0",
+        "react-router-dom^6.22.3",
+        "react-to-print^2.15.1",
+        "recharts^2.12.3",
+        "tailwind-merge^2.2.2",
+        "zustand^4.5.2",
+        "@types/react^18.2.66",
+        "@types/react-dom^18.2.22",
+        "@vitejs/plugin-react^4.2.1",
+        "autoprefixer^10.4.19",
+        "postcss^8.4.38",
+        "tailwindcss^3.4.1",
+        "typescript^5.2.2",
+        "vite^5.2.2"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [
+        "BASE_URL"
+      ],
+      "archivos_clave": [
+        "package.json",
+        "README.md",
+        ".github/workflows/deploy-pages.yml",
+        "vite.config.ts",
+        ".github/workflows/readme.yml",
+        "postcss.config.js",
+        "src/app/router.tsx",
+        "src/shared/api/resoluciones.ts",
+        "src/shared/types/index.ts",
+        "tailwind.config.js",
+        "tsconfig.json",
+        "tsconfig.node.json"
+      ]
+    },
+    {
+      "nombre": "COIPO_EXCEL_PLANMANEJO",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/COIPO_EXCEL_PLANMANEJO",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:07Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 2971,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 35
+      },
+      "lenguajes": {
+        "React": 12,
+        "Markdown": 4,
+        "YAML": 2,
+        "JavaScript": 2,
+        "JSON": 2,
+        "CSS": 2,
+        "HTML": 1
+      },
+      "tecnologias": {
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "react^19.2.6",
+        "react-dom^19.2.6",
+        "jspdf^2.5.1",
+        "html2canvas^1.4.1",
+        "@eslint/js^10.0.1",
+        "@types/react^19.2.14",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.1",
+        "eslint^10.3.0",
+        "eslint-plugin-react-hooks^7.1.1",
+        "eslint-plugin-react-refresh^0.5.2",
+        "globals^17.6.0",
+        "vite^8.0.12"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "frontend/package.json",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml",
+        "frontend/eslint.config.js"
+      ]
+    },
+    {
+      "nombre": "coipo_incendio_dashboard",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_incendio_dashboard",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:10Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 1310,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": false,
+        "archivos": 38
+      },
+      "lenguajes": {
+        "React": 14,
+        "JavaScript": 7,
+        "Markdown": 3,
+        "JSON": 3,
+        "HTML": 2,
+        "YAML": 2,
+        "CSS": 2
+      },
+      "tecnologias": {
+        "Tailwind": "declared",
+        "Leaflet": "declared",
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "@tailwindcss/vite^4.3.3",
+        "leaflet^1.9.4",
+        "pako^3.0.1",
+        "react^19.2.7",
+        "react-dom^19.2.7",
+        "react-leaflet^5.0.0",
+        "recharts^2.15.4",
+        "tailwindcss^4.3.3",
+        "@types/react^19.2.17",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.3",
+        "oxlint^1.71.0",
+        "vite^8.1.1"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [
+        "BASE_URL"
+      ],
+      "archivos_clave": [
+        "frontend/package.json",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml"
+      ]
+    },
+    {
+      "nombre": "coipo_cabania",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_cabania",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:23:38Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 3251,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": true,
+        "tiene_gitignore": true,
+        "archivos": 161
+      },
+      "lenguajes": {
+        "React": 38,
+        "Markdown": 22,
+        "JavaScript": 18,
+        "JSON": 5,
+        "YAML": 3,
+        "HTML": 1,
+        "CSS": 1
+      },
+      "tecnologias": {
+        "Leaflet": "declared",
+        "React": "declared",
+        "Tailwind": "declared",
+        "Vite": "declared",
+        "Node.js": "declared",
+        "Docker": "declared"
+      },
+      "manifiestos": [
+        "docker-compose.yml",
+        "frontend/Dockerfile",
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "node:22-slim",
+        "nginx:1.27-alpine",
+        "date-fns^4.4.0",
+        "leaflet^1.9.4",
+        "lucide-react^1.27.0",
+        "react^19.2.7",
+        "react-day-picker^10.0.1",
+        "react-dom^19.2.7",
+        "react-leaflet^5.0.0",
+        "react-router-dom^7.18.2",
+        "recharts^3.10.1",
+        "@tailwindcss/vite^4.3.3",
+        "@types/react^19.2.17",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.3",
+        "oxlint^1.71.0",
+        "puppeteer-core^25.4.0",
+        "tailwindcss^4.3.3",
+        "vite^8.1.1"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [
+        "BASE_URL"
+      ],
+      "archivos_clave": [
+        "docker-compose.yml",
+        "frontend/Dockerfile",
+        "frontend/package.json",
+        ".env.example",
+        "INSUMO_GRAFICO/README.md",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy-prod.yml",
+        "frontend/vite.config.js",
+        ".dockerignore",
+        ".github/workflows/readme.yml",
+        "INSUMO/DOCKER.md",
+        "INSUMO/fastapi-postgresql-conexion.md",
+        "INSUMO/guia-8-prompt-checklist-pre-deploy.md",
+        "INSUMO_PRODUCCION/DOCKER.md",
+        "INSUMO_PRODUCCION/fastapi-postgresql-conexion.md",
+        "INSUMO_PRODUCCION/guia-8-prompt-checklist-pre-deploy.md",
+        "deploy/nginx-reserva-bienestar.conaf.cl.conf",
+        "frontend/src/api/client.js",
+        "frontend/src/api/gestion.js",
+        "frontend/src/api/inmuebles.js",
+        "frontend/src/api/reservas.js",
+        "frontend/src/api/store.js",
+        "frontend/src/api/valoraciones.js"
+      ]
+    },
+    {
+      "nombre": "coipo_conaf_dashboard",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_conaf_dashboard",
+      "descripcion": "init",
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:23:49Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 9874,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 142
+      },
+      "lenguajes": {
+        "React": 38,
+        "Markdown": 30,
+        "JavaScript": 22,
+        "JSON": 11,
+        "Batch": 3,
+        "YAML": 3,
+        "CSS": 3,
+        "Python": 2
+      },
+      "tecnologias": {
+        "Express": "declared",
+        "PostgreSQL": "declared",
+        "Leaflet": "declared",
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "backend/package.json",
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "cors^2.8.5",
+        "express^5.1.0",
+        "pg^8.16.3",
+        "leaflet^1.9.4",
+        "lucide-react^0.468.0",
+        "maplibre-gl^5.7.1",
+        "react^19.1.1",
+        "react-dom^19.1.1",
+        "react-leaflet^5.0.0",
+        "@vitejs/plugin-react^5.0.2",
+        "vite^7.1.3"
+      ],
+      "endpoints": [
+        "FETCH ${BASE}manifest.json",
+        "FETCH ${BASE}${e.file}",
+        "FETCH ${import.meta.env.BASE_URL}sidco_sintetico_sur_chile_1mes_yoy.json"
+      ],
+      "tablas": [],
+      "variables_entorno": [
+        "BASE_URL",
+        "VITE_API_URL"
+      ],
+      "archivos_clave": [
+        "backend/package.json",
+        "frontend/package.json",
+        "README.md",
+        "backend/.env.example",
+        "backend/README.md",
+        "backend/package-lock.json",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy-pages.yml",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml",
+        "CONFIG_GITHUB_PAGES.md",
+        "backend/src/db/postgres.js",
+        "backend/src/routes/bitacora.js",
+        "backend/src/routes/dashboard.js",
+        "backend/src/services/bitacoraService.js",
+        "frontend/src/config/danoCatalogo.js",
+        "frontend/src/data/api.js"
+      ]
+    },
+    {
+      "nombre": "COIPO_PDF_EXCEL",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/COIPO_PDF_EXCEL",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:29Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 7783,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 78
+      },
+      "lenguajes": {
+        "JavaScript": 17,
+        "React": 8,
+        "JSON": 6,
+        "Markdown": 4,
+        "YAML": 2,
+        "HTML": 2,
+        "CSS": 2
+      },
+      "tecnologias": {
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "exceljs^4.4.0",
+        "fflate^0.8.3",
+        "pdfjs-dist^6.2.108",
+        "react^19.2.8",
+        "react-dom^19.2.8",
+        "@types/react^19.2.17",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.4",
+        "oxlint^1.75.0",
+        "puppeteer-core^25.5.0",
+        "vite^8.2.0"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "frontend/package.json",
+        "INSUMO_GRAFICO/README.md",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".claude/settings.local.json",
+        ".github/workflows/readme.yml"
+      ]
+    },
+    {
+      "nombre": "coipo_predio",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_predio",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:30Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 3024,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 25
+      },
+      "lenguajes": {
+        "JSON": 5,
+        "JavaScript": 3,
+        "Markdown": 2,
+        "Batch": 2,
+        "YAML": 2,
+        "React": 2,
+        "SQL": 1,
+        "HTML": 1
+      },
+      "tecnologias": {
+        "Express": "declared",
+        "Vite": "declared",
+        "React": "declared",
+        "Leaflet": "declared",
+        "Pandas": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "backend/package.json",
+        "frontend/package.json",
+        "tools/requirements.txt"
+      ],
+      "dependencias": [
+        "@duckdb/node-api^1.3.2-alpha.26",
+        "cors^2.8.5",
+        "dotenv^16.4.7",
+        "express^4.21.2",
+        "@vitejs/plugin-react^4.3.4",
+        "vite^6.0.7",
+        "react^18.3.1",
+        "react-dom^18.3.1",
+        "lucide-react^0.468.0",
+        "leaflet^1.9.4",
+        "react-leaflet^4.2.1",
+        "duckdb",
+        "pandas"
+      ],
+      "endpoints": [
+        "FETCH ${base}demo-data.json",
+        "FETCH ${API_URL}/api/ejemplos",
+        "FETCH ${API_URL}/api/calidad-datos"
+      ],
+      "tablas": [
+        "PREDIOSOLICITUD",
+        "SOLICITUD",
+        "PREDIO",
+        "PROPIETARIO",
+        "SOLICITUD",
+        "PERSONA",
+        "PREDIOSOLICITUD",
+        "PROPIETARIO",
+        "PROPIETARIOPREDIO",
+        "SOLICITUD",
+        "PREDIOSOLICITUD",
+        "PREDIO",
+        "PROPIETARIO",
+        "PERSONA"
+      ],
+      "variables_entorno": [
+        "BASE_URL",
+        "VITE_API_URL"
+      ],
+      "archivos_clave": [
+        "backend/package.json",
+        "frontend/package.json",
+        "tools/requirements.txt",
+        "README.md",
+        "backend/.env.example",
+        "backend/package-lock.json",
+        "frontend/.env.example",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy-pages.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml",
+        "frontend/src/api.js"
+      ]
+    },
+    {
+      "nombre": "coipo_tv",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_tv",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:52Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 5476,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 101
+      },
+      "lenguajes": {
+        "React+TS": 47,
+        "TypeScript": 21,
+        "JSON": 16,
+        "Markdown": 2,
+        "YAML": 2,
+        "Python": 2,
+        "JavaScript": 2,
+        "HTML": 1
+      },
+      "tecnologias": {
+        "React": "declared",
+        "Vite": "declared",
+        "Tailwind": "declared",
+        "Node.js": "declared",
+        "Pandas": "imported"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "@tanstack/react-query^5.101.4",
+        "lucide-react^1.31.0",
+        "react^19.2.8",
+        "react-dom^19.2.8",
+        "react-router-dom^6.30.4",
+        "recharts^2.15.4",
+        "typescript5.9.3",
+        "@types/node^26.4.0",
+        "@types/react^19.2.17",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.4",
+        "autoprefixer^10.5.4",
+        "oxlint^1.75.0",
+        "postcss^8.5.26",
+        "tailwindcss^3.4.19",
+        "vite^8.2.0"
+      ],
+      "endpoints": [],
+      "tablas": [],
+      "variables_entorno": [
+        "BASE_URL"
+      ],
+      "archivos_clave": [
+        "frontend/package.json",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.ts",
+        ".github/workflows/readme.yml",
+        "frontend/postcss.config.js",
+        "frontend/src/features/tv/components/charts/TvGroupedBar.tsx",
+        "frontend/src/features/tv/config.ts",
+        "frontend/tailwind.config.js",
+        "frontend/tsconfig.json",
+        "frontend/tsconfig.node.json"
+      ]
+    },
+    {
+      "nombre": "coipo_vista_catastro",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_vista_catastro",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:54Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 1270,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 150
+      },
+      "lenguajes": {
+        "React": 17,
+        "Python": 15,
+        "JavaScript": 13,
+        "Markdown": 8,
+        "JSON": 7,
+        "HTML": 4,
+        "YAML": 2,
+        "CSS": 2
+      },
+      "tecnologias": {
+        "Leaflet": "declared",
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared",
+        "NumPy": "imported",
+        "Pandas": "imported"
+      },
+      "manifiestos": [
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "@deck.gl/core9.3.10",
+        "@deck.gl/extensions9.3.10",
+        "@deck.gl/layers9.3.10",
+        "leaflet1.9.4",
+        "react19.2.8",
+        "react-dom19.2.8",
+        "@types/react^19.2.17",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.4",
+        "oxlint^1.75.0",
+        "vite^8.2.0"
+      ],
+      "endpoints": [
+        "FETCH ${DATA}/simef.json",
+        "FETCH ${DATA}/oficiales.json",
+        "FETCH ${SERVICIO}?${q}"
+      ],
+      "tablas": [],
+      "variables_entorno": [
+        "BASE_URL"
+      ],
+      "archivos_clave": [
+        "frontend/package.json",
+        "INSUMO_GRAFICO/README.md",
+        "README.md",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        ".github/workflows/deploy.yml",
+        "frontend/vite.config.js",
+        ".github/workflows/readme.yml",
+        "frontend/src/config.js"
+      ]
+    },
+    {
+      "nombre": "coipo_jueces",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_jueces",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:13Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 8045,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": true,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 30
+      },
+      "lenguajes": {
+        "Python": 21,
+        "Markdown": 3,
+        "YAML": 3
+      },
+      "tecnologias": {},
+      "manifiestos": [],
+      "dependencias": [],
+      "endpoints": [
+        "GET /health"
+      ],
+      "tablas": [],
+      "variables_entorno": [
+        "GITHUB_ACTIONS",
+        "GITHUB_OUTPUT",
+        "NO_COLOR"
+      ],
+      "archivos_clave": [
+        "README.md",
+        ".github/workflows/autotest.yml",
+        ".github/workflows/readme.yml",
+        ".github/workflows/verificar.yml",
+        "jueces/j06_config.py",
+        "tests/test_j06_config.py"
+      ]
+    },
+    {
+      "nombre": "coipo_monitoreo",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_monitoreo",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:24:18Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 11870,
+        "readme_placeholder": false,
+        "tiene_license": false,
+        "tiene_tests": true,
+        "tiene_ci": true,
+        "tiene_docker": true,
+        "tiene_gitignore": true,
+        "archivos": 41
+      },
+      "lenguajes": {
+        "Python": 19,
+        "YAML": 4,
+        "Markdown": 3,
+        "Text": 3,
+        "Shell": 2,
+        "TOML": 1,
+        "PowerShell": 1
+      },
+      "tecnologias": {
+        "Docker": "declared",
+        "SQLite": "imported",
+        "FastAPI": "imported"
+      },
+      "manifiestos": [
+        "docker-compose.yml",
+        "Dockerfile",
+        "pyproject.toml",
+        "requirements-dev.txt",
+        "requirements.txt"
+      ],
+      "dependencias": [
+        "coipo_monitoreo:latest",
+        "python:3.12-slim",
+        "build-backend",
+        "coipo-monitoreo",
+        "pytest>=8.0",
+        "httpx>=0.27",
+        "dnspython>=2.6",
+        "PyYAML>=6.0",
+        "cryptography>=42",
+        "pydantic>=2.7",
+        "rich>=13.7"
+      ],
+      "endpoints": [
+        "GET /health",
+        "GET /listo",
+        "GET /estado",
+        "GET /eventos",
+        "GET /"
+      ],
+      "tablas": [],
+      "variables_entorno": [
+        "ALERTA_DE",
+        "ALERTA_PARA",
+        "COIPO_ARCHIVO_LOG",
+        "COIPO_BASE_DATOS",
+        "COIPO_CONFIG",
+        "COIPO_INTERVALO_MIN",
+        "SMTP_CLAVE",
+        "SMTP_HOST",
+        "SMTP_PUERTO",
+        "SMTP_TLS",
+        "SMTP_USUARIO",
+        "WEBHOOK_URL"
+      ],
+      "archivos_clave": [
+        "Dockerfile",
+        "docker-compose.yml",
+        "pyproject.toml",
+        "requirements.txt",
+        "README.md",
+        "requirements-dev.txt",
+        ".github/workflows/deploy-uat.yml",
+        ".dockerignore",
+        ".github/workflows/readme.yml",
+        "coipo_monitoreo/config.py",
+        "coipo_monitoreo/modelos.py",
+        "config/dominios.yml",
+        "deploy/crontab.ejemplo",
+        "deploy/env-uat.ejemplo",
+        "deploy/tarea-windows.ps1",
+        "deploy/vhost-monitoreo-uat.conf",
+        "tests/test_config_historial.py"
+      ]
+    },
+    {
+      "nombre": "COIPO_PRENSA",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/COIPO_PRENSA",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T21:25:58Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 6072,
+        "readme_placeholder": false,
+        "tiene_license": true,
+        "tiene_tests": false,
+        "tiene_ci": true,
+        "tiene_docker": false,
+        "tiene_gitignore": true,
+        "archivos": 96
+      },
+      "lenguajes": {
+        "JavaScript": 49,
+        "React": 22,
+        "Markdown": 7,
+        "JSON": 6,
+        "YAML": 2,
+        "CSS": 2,
+        "HTML": 1
+      },
+      "tecnologias": {
+        "Leaflet": "declared",
+        "React": "declared",
+        "Vite": "declared",
+        "Node.js": "declared"
+      },
+      "manifiestos": [
+        "collector/package.json",
+        "frontend/package.json"
+      ],
+      "dependencias": [
+        "rss-parser^3.13.0",
+        "vitest^4.1.10",
+        "leaflet^1.9.4",
+        "lucide-react^1.25.0",
+        "minisearch^7.2.0",
+        "react^19.2.7",
+        "react-dom^19.2.7",
+        "react-leaflet^5.0.0",
+        "react-router-dom^7.18.1",
+        "recharts^3.9.2",
+        "vitest^4.1.10",
+        "@types/react^19.2.17",
+        "@types/react-dom^19.2.3",
+        "@vitejs/plugin-react^6.0.3",
+        "oxlint^1.71.0",
+        "vite^8.1.1"
+      ],
+      "endpoints": [
+        "FETCH https://api.anthropic.com/v1/messages"
+      ],
+      "tablas": [],
+      "variables_entorno": [
+        "BASE_URL"
+      ],
+      "archivos_clave": [
+        "collector/package.json",
+        "frontend/package.json",
+        "README.md",
+        "collector/package-lock.json",
+        "frontend/README.md",
+        "frontend/package-lock.json",
+        "frontend/vite.config.js",
+        ".github/workflows/actualizar.yml",
+        ".github/workflows/readme.yml",
+        "collector/src/config/conceptos.js",
+        "collector/src/config/gazetteer-entidades.js",
+        "collector/src/config/gazetteer-geografico.js",
+        "collector/src/config/medios.js",
+        "collector/src/config/parametros.js",
+        "fastapi-postgresql-conexion.md",
+        "frontend/src/vistas/Configuracion.jsx"
+      ]
+    },
+    {
+      "nombre": "coipo_academia",
+      "privado": false,
+      "url": "https://github.com/Sud-Austral/coipo_academia",
+      "descripcion": null,
+      "default_branch": "main",
+      "ultimo_push": "2026-09-06T19:23:31Z",
+      "topics": [],
+      "salud": {
+        "readme_bytes": 3500,
+        "readme_placeholder": false,
+        "tiene_license": true,
+        "tiene_tests": true,
+        "tiene_ci": true,
+        "tiene_docker": true,
+        "tiene_gitignore": true,
+        "archivos": 471
+      },
+      "lenguajes": {
+        "PHP": 376,
+        "Markdown": 25,
+        "YAML": 6,
+        "JSON": 4,
+        "JavaScript": 3,
+        "SQL": 2,
+        "CSS": 2,
+        "SCSS": 2
+      },
+      "tecnologias": {
+        "Docker": "declared"
+      },
+      "manifiestos": [
+        "docker-compose.yml",
+        "Dockerfile"
+      ],
+      "dependencias": [
+        "php:8.4-apache"
+      ],
+      "endpoints": [],
+      "tablas": [
+        "PUBLIC",
+        "pg_roles",
+        "PUBLIC",
+        "information_schema.tables",
+        "mdl_user",
+        "mdl_course",
+        "mdl_course_categories",
+        "pg_sequences"
+      ],
+      "variables_entorno": [],
+      "archivos_clave": [
+        "Dockerfile",
+        "docker-compose.yml",
+        ".env.example",
+        "README.md",
+        "academia/README.md",
+        "manuales/README.md",
+        "plugins/mod/customcert/README.md",
+        ".github/workflows/deploy-prod.yml",
+        "docker-compose.migracion.yml",
+        "docker/config.php",
+        "plugins/mod/customcert/db/services.php",
+        ".dockerignore",
+        ".github/workflows/readme.yml",
+        "INSUMO/DOCKER.md",
+        "INSUMO/fastapi-postgresql-conexion.md",
+        "INSUMO/guia-8-prompt-checklist-pre-deploy.md",
+        "db/setup_bd.sql",
+        "db/setup_bd_v2.sql",
+        "docker/apache-moodle.conf",
+        "docker/health.php",
+        "docker/moodle-crontab",
+        "docker/php.ini",
+        "manuales/07-authenticated-user.md",
+        "manuales/08-authenticated-user-frontpage.md",
+        "plugins/mod/customcert/.github/workflows/moodle-ci.yml"
+      ]
+    }
+  ],
+  "privados_agregado": {
+    "total": 25,
+    "sin_readme": 3,
+    "readme_placeholder": 14,
+    "sin_license": 23,
+    "sin_tests": 18,
+    "sin_ci": 0
+  }
+}

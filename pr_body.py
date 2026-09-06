@@ -176,6 +176,7 @@ def construir(
     evidencia: dict,
     auditoria: str = "",
     propuesta: str | None = None,
+    artefactos: list[dict] | None = None,
 ) -> str:
     """
     Arma el informe en Markdown.
@@ -208,6 +209,11 @@ def construir(
     lineas += _inventario(evidencia)
     lineas += _tecnologias(evidencia)
     lineas += _sin_verificar(evidencia, auditoria)
+
+    if artefactos:
+        from readme3_artifacts import bloque_para_el_informe
+
+        lineas += bloque_para_el_informe(artefactos)
 
     # Cuando no se escribe nada, la propuesta tiene que verse en alguna
     # parte o el trabajo se pierde.

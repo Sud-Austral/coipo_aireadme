@@ -39,6 +39,9 @@ verificables. Las senales del detector viajan marcadas como diagnostico.
 
 from __future__ import annotations
 
+import json
+import re
+
 CLAVES_PROHIBIDAS_EN_PUBLICO = (
     "nombre",
     "descripcion",
@@ -284,15 +287,28 @@ def verificar_sin_fuga(publicadas: list[dict], fichas: list[dict]) -> list[str]:
     """
 
     nombres_privados = {
-        f["nombre"].lower() for f in fichas if f.get("privado")
+        f["nombre"] for f in fichas if f.get("privado")
     }
 
     fugas = []
 
-    texto = repr(publicadas).lower()
+    texto = json.dumps(publicadas, ensure_ascii=False)
 
     for nombre in nombres_privados:
-        if nombre in texto:
+
+        # Por limite de palabra y no por subcadena.
+        #
+        # Con una comprobacion de subcadena, la variable COIPO_ARCHIVO_LOG
+        # de coipo_monitoreo (publico) hacia saltar la alarma por el
+        # repositorio privado coipo_archivo, y bloqueaba la publicacion
+        # entera. Una red que salta con falsos positivos termina
+        # desactivada, que es peor que no tenerla.
+        patron = re.compile(
+            r"(?<![A-Za-z0-9_])" + re.escape(nombre) + r"(?![A-Za-z0-9_])",
+            re.IGNORECASE,
+        )
+
+        if patron.search(texto):
             fugas.append(f"nombre de repositorio privado: {nombre}")
 
     for ficha in publicadas:

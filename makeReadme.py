@@ -26,6 +26,7 @@ from insumos_inversos import (
     preparar as preparar_insumos,
     validar_citas as validar_citas_insumos,
 )
+from readme3_artifacts import proponer as proponer_artefactos
 from readme3_orphans import find_candidates, resumen as resumen_orphans
 from readme_config import (
     ARCHIVO as ARCHIVO_CONFIG,
@@ -1628,6 +1629,12 @@ def main():
             evidencia=cargar_evidencia(evidence_file),
             auditoria=audit,
             propuesta=readme,
+            # Solo si el repositorio lo pidio. Estos artefactos son
+            # INSTRUCCIONES que alguien ejecuta, no afirmaciones que un
+            # auditor revisa: van como propuesta y nunca al arbol.
+            artefactos=(
+                proponer_artefactos(evidencia) if config.artifacts else None
+            ),
         )
 
         escribir_informe(

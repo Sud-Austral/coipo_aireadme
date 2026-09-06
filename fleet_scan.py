@@ -47,6 +47,9 @@ from github_client import GITHUB_API, GitHubClient, Repository
 # omitidos con su motivo: un censo que salta cosas en silencio miente.
 MAX_TAMANO_KB = 300_000
 
+# El propio indice no es un proyecto de la familia: no se censa a si mismo.
+NO_CENSAR = {"coipo_index"}
+
 
 def descargar(client: GitHubClient, repo: Repository, destino: Path) -> Path | None:
     """
@@ -132,7 +135,10 @@ def censar(
     repos = [
         r
         for r in client.list_organization_repositories(only_in_scope=True)
-        if not r.archived and not r.disabled and not r.fork
+        if not r.archived
+        and not r.disabled
+        and not r.fork
+        and r.name not in NO_CENSAR
     ]
 
     repos.sort(key=lambda r: r.name.lower())
@@ -157,7 +163,10 @@ def censar(
                     "repo": repo.name,
                     "motivo": (
                         f"OMITIDO_POR_TAMANO: {repo.size / 1024:.0f} MB "
-                        f"supera el limite de {MAX_TAMANO_KB / 1024:.0f} MB"
+                        f"supera el limite de {MAX_TAMANO_KB / 1024:.0f} MB. "
+                        "Suele deberse a datos versionados, no a codigo: "
+                        "delete_files.md del propio repositorio suele "
+                        "explicar por que pesa tanto"
                     ),
                 }
             )

@@ -354,15 +354,20 @@ def analyze_js(path: Path, repo: Path):
     # VITE environment variables
     # --------------------------------------------------------
 
+    # Vite usa import.meta.env; Node, Next y CRA usan process.env. Solo se
+    # reconocia el primero, asi que en cualquier backend JavaScript la
+    # seccion de variables llegaba vacia al modelo.
     env_pattern = re.compile(
-        r'import\.meta\.env\.([A-Z][A-Z0-9_]*)'
+        r'(?:import\.meta\.env|process\.env)'
+        r'(?:\.([A-Z][A-Z0-9_]*)|\[["\']([A-Z][A-Z0-9_]*)["\']\])'
     )
 
     for match in env_pattern.finditer(text):
 
         result["env_vars"].append(
             {
-                "value": match.group(1),
+                # El nombre puede venir por acceso con punto o por indice.
+                "value": match.group(1) or match.group(2),
                 "line": line_number(
                     text,
                     match.start(),
