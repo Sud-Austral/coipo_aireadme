@@ -7,6 +7,11 @@ from pathlib import Path
 
 import requests
 
+from pr_body import (
+    cargar_evidencia,
+    construir as construir_informe,
+    escribir as escribir_informe,
+)
 from readme_merge import merge
 
 
@@ -27,6 +32,11 @@ ZAI_URL = (
 )
 
 CANDIDATE_FILE_NAME = "README_CANDIDATE.md"
+
+# Informe de la corrida. Va al cuerpo del pull request y al resumen de la
+# ejecucion, para que la evidencia y la propuesta se vean incluso cuando el
+# contrato con el humano decide no modificar nada.
+REPORT_FILE_NAME = "readme_report.md"
 
 MAX_REPAIR_ATTEMPTS = 2
 
@@ -880,7 +890,7 @@ def save_final(
             f"{CANDIDATE_FILE_NAME}."
         )
 
-        return None
+        return None, resultado
 
     try:
 
@@ -896,7 +906,7 @@ def save_final(
             f"{exc}"
         )
 
-    return output
+    return output, resultado
 
 
 # ============================================================
@@ -1123,10 +1133,44 @@ def main():
             "La validación no fue superada."
         )
 
-    final = save_final(
+    final, resultado_merge = save_final(
         repo,
         readme,
     )
+
+    # --------------------------------------------------------
+    # INFORME DE LA CORRIDA
+    #
+    # Va siempre, incluso cuando no se modifica nada. Si el contrato
+    # decide respetar un README escrito a mano no hay diff, y sin diff no
+    # hay pull request: la propuesta y la evidencia se perderian.
+    # --------------------------------------------------------
+
+    try:
+
+        informe = construir_informe(
+            nombre_repo=repo.name,
+            resultado_merge=resultado_merge,
+            evidencia=cargar_evidencia(evidence_file),
+            auditoria=audit,
+            propuesta=readme,
+        )
+
+        escribir_informe(
+            repo / REPORT_FILE_NAME,
+            informe,
+        )
+
+        print("")
+        print(
+            f"Informe de la corrida: {repo / REPORT_FILE_NAME}"
+        )
+
+    except Exception as exc:
+
+        # El informe es util, pero nunca puede tumbar la corrida.
+        print("")
+        print(f"AVISO: no se pudo generar el informe: {exc}")
 
     print("")
     print("=" * 70)

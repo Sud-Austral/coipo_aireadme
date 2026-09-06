@@ -61,6 +61,7 @@ IGNORED_FILES = {
     # motivo que readme_context: su extension esta en TEXT_EXTENSIONS y se
     # leeria a si mismo en la corrida siguiente.
     "README_CANDIDATE.md",
+    "readme_report.md",
 }
 
 TEXT_EXTENSIONS = {

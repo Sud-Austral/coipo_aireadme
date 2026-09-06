@@ -234,12 +234,56 @@ def get_evidence_commands(
     # nunca llegaba a ejecutarse y los comandos inventados no se detectaban.
     for script in evidence.get("npm_scripts", []):
 
-        if isinstance(script, dict):
+        if not isinstance(script, dict):
+            continue
 
-            command = script.get("command")
+        command = script.get("command")
 
-            if command:
-                values.add(command)
+        if command:
+            values.add(normalizar_comando(command))
+
+        # Un README escribe "npm run build", no el comando que hay detras.
+        nombre = script.get("name")
+
+        if nombre:
+            values.add(f"npm run {nombre}")
+            values.add(f"yarn {nombre}")
+            values.add(f"pnpm {nombre}")
+            values.add(f"npx {nombre}")
+
+    manifiestos = evidence.get("manifests") or []
+
+    for manifiesto in manifiestos:
+
+        if manifiesto.get("third_party"):
+            continue
+
+        ruta = manifiesto.get("path", "")
+        clase = manifiesto.get("kind")
+
+        # Comandos de gestor de paquetes: no son scripts del proyecto, pero
+        # su validez depende de que el manifiesto exista. Se aceptan solo
+        # cuando existe.
+        if clase == "npm":
+            values.update(
+                {
+                    "npm install", "npm i", "npm ci",
+                    "yarn install", "yarn", "pnpm install",
+                }
+            )
+
+        if clase == "python" and ruta.endswith(".txt"):
+            values.add(f"pip install -r {ruta}")
+            values.add("pip install -r requirements.txt")
+
+        if clase in {"docker", "compose"}:
+            values.update(
+                {
+                    "docker compose up", "docker-compose up",
+                    "docker compose up -d", "docker-compose up -d",
+                    "docker compose build", "docker-compose build",
+                }
+            )
 
     # Compatibilidad adicional:
     # algunas implementaciones pueden guardar
@@ -473,10 +517,34 @@ def extract_commands(
         ):
 
             values.add(
-                match.group(1).strip()
+                normalizar_comando(match.group(1))
             )
 
+    values.discard("")
+
     return values
+
+
+def normalizar_comando(comando: str) -> str:
+    """
+    Deja el comando comparable.
+
+    Un README escribe `npm run build            # genera dist/`, y el
+    package.json declara el script como `build`. Sin quitar el comentario y
+    sin colapsar los espacios, la comprobacion avisaba de comandos que
+    existen de verdad: se verifico sobre COIPO_PDF_EXCEL, donde marcaba como
+    no verificados los siete scripts declarados en su propio package.json.
+    """
+
+    texto = comando.strip()
+
+    # Comentario de shell al final de la linea.
+    posicion = texto.find(" #")
+
+    if posicion != -1:
+        texto = texto[:posicion]
+
+    return " ".join(texto.split())
 
 
 # ============================================================

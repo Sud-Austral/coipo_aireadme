@@ -23,3 +23,6 @@ README_CANDIDATE.md
 # Python
 __pycache__/
 *.py[cod]
+
+# Informe de la corrida. Se regenera en cada ejecucion.
+readme_report.md

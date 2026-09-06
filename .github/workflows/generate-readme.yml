@@ -453,6 +453,25 @@ jobs:
           git diff -- README.md
 
       # --------------------------------------------------
+      # Informe al resumen de la ejecucion
+      #
+      # Va SIEMPRE, tambien cuando el contrato con el humano decide no
+      # modificar nada. En ese caso no hay diff, y sin diff no hay pull
+      # request: sin esto la evidencia y la propuesta se perderian.
+      # --------------------------------------------------
+
+      - name: Publicar informe en el resumen
+        if: always()
+        run: |
+          if [ -f target/readme_report.md ]; then
+            cat target/readme_report.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## Sin informe" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "La corrida no llego a generar el informe." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # --------------------------------------------------
       # 18. Crear Pull Request
       # --------------------------------------------------
 
@@ -479,41 +498,11 @@ jobs:
 
           title: "docs: actualización automática del README"
 
-          body: |
-            ## README generado automáticamente
-
-            Este Pull Request fue generado automáticamente por
-            `Sud-Austral/coipo_aireadme`.
-
-            ### Proceso realizado
-
-            1. Se analizó la estructura del repositorio.
-            2. Se extrajo evidencia técnica desde el código.
-            3. Se generó un contexto compacto.
-            4. Se generó un README candidato con Z.ai.
-            5. Se validó el README contra la evidencia.
-            6. Se corrigieron inconsistencias detectadas.
-            7. Se generó este Pull Request.
-
-            ### Evidencia generada
-
-            - `readme_context/README_EVIDENCE.json`
-            - `readme_context/README_CONTEXT_ULTRA.md`
-            - `readme_context/repository_analysis.json`
-
-            ### Archivo principal modificado
-
-            - `README.md`
-
-            ### Importante
-
-            Este workflow no modifica directamente la rama principal.
-
-            El cambio debe ser revisado y aprobado antes de realizar el merge.
-
-            ---
-
-            🤖 Generado automáticamente por AI README
+          # El cuerpo sale del informe que genera makeReadme.py: que se
+          # hizo, con que evidencia y que quedo sin verificar. Antes era un
+          # texto fijo que describia el proceso y era identico en los 57
+          # repositorios.
+          body-path: target/readme_report.md
 
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
 
