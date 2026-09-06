@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import subprocess
 import sys
@@ -26,6 +27,11 @@ from insumos_inversos import (
     validar_citas as validar_citas_insumos,
 )
 from readme3_orphans import find_candidates, resumen as resumen_orphans
+from readme_config import (
+    ARCHIVO as ARCHIVO_CONFIG,
+    bloque_declarado,
+    cargar as cargar_config,
+)
 from readme3_fingerprint import (
     compute as calcular_huella,
     leer as leer_huella,
@@ -1301,6 +1307,42 @@ def main():
     api_key, model = load_api()
 
     # --------------------------------------------------------
+    # CONFIGURACION DEL REPOSITORIO
+    #
+    # El unico canal por el que una persona le habla al generador. Se lee
+    # antes que nada: si el repositorio se declaro fuera, no se hace ni el
+    # analisis.
+    # --------------------------------------------------------
+
+    config = cargar_config(repo)
+
+    for aviso in config.avisos:
+        print("")
+        print(f"AVISO ({ARCHIVO_CONFIG}): {aviso}")
+
+    if not config.enabled:
+
+        print("")
+        print("=" * 70)
+        print(" REPOSITORIO DESACTIVADO")
+        print("=" * 70)
+        print("")
+        print(
+            f"{ARCHIVO_CONFIG} declara enabled: false. No se analiza ni se "
+            "genera nada."
+        )
+
+        sys.exit(0)
+
+    if config.ignore_paths:
+        os.environ["AIREADME_IGNORE_PATHS"] = ",".join(config.ignore_paths)
+        print("")
+        print(
+            f"Rutas ignoradas por {ARCHIVO_CONFIG}: "
+            + ", ".join(config.ignore_paths)
+        )
+
+    # --------------------------------------------------------
     # PASO 1
     # --------------------------------------------------------
 
@@ -1337,6 +1379,30 @@ def main():
         )
     )
 
+    # Lo que declaro una persona pesa mas que cualquier señal detectada, y
+    # va al principio del contexto para que sobreviva al truncado.
+    declarado = bloque_declarado(config, repo.name)
+
+    if declarado:
+
+        marca = "## EVIDENCE_POLICY"
+
+        if marca in context:
+            posicion = context.index(marca)
+            context = (
+                context[:posicion]
+                + "\n".join(declarado).strip()
+                + "\n\n"
+                + context[posicion:]
+            )
+        else:
+            context = "\n".join(declarado) + "\n\n" + context
+
+        print("")
+        print(
+            f"Testimonio humano de {ARCHIVO_CONFIG} incorporado al contexto."
+        )
+
     evidencia = cargar_evidencia(evidence_file)
 
     huella_nueva = calcular_huella(evidencia)
@@ -1348,7 +1414,7 @@ def main():
     # Los insumos son independientes del README: un repositorio con README
     # escrito a mano igual se beneficia de tener 00-PROBLEMA y 01-SOLUCION.
     # Por eso este paso va ANTES de los cortes.
-    if con_insumos:
+    if con_insumos or config.insumos:
 
         generar_insumos(
             repo=repo,
@@ -1587,10 +1653,14 @@ def main():
     # —eso es determinista y ya esta hecho—: solo los juzga y explica.
     # --------------------------------------------------------
 
-    candidatos = find_candidates(
-        repo,
-        evidencia.get("files") or [],
-        evidencia.get("analysis") or {},
+    candidatos = (
+        find_candidates(
+            repo,
+            evidencia.get("files") or [],
+            evidencia.get("analysis") or {},
+        )
+        if config.cleanup
+        else []
     )
 
     veredicto = None

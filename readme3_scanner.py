@@ -63,6 +63,11 @@ IGNORED_FILES = {
     "README_CANDIDATE.md",
     "readme_report.md",
     "delete_files.md",
+    # La prosa que un humano escribe aqui volveria como falsos positivos de
+    # tecnologia citados en [.aireadme.yml:N]. Es el mismo bug de
+    # auto-deteccion que ya aparecio con readme_context y con las listas de
+    # palabras clave del propio detector.
+    ".aireadme.yml",
 }
 
 TEXT_EXTENSIONS = {
@@ -213,10 +218,30 @@ def read_text(path: Path) -> str | None:
         return None
 
 
+def rutas_extra_ignoradas() -> list[str]:
+    """
+    Rutas que el repositorio declaro en .aireadme.yml.
+
+    Se pasan por entorno y no por argumento porque readme3.py se invoca
+    como subproceso desde makeReadme.py, que es quien lee la configuracion.
+    """
+
+    crudo = os.environ.get("AIREADME_IGNORE_PATHS", "")
+
+    return [p.strip().strip("/") for p in crudo.split(",") if p.strip()]
+
+
 def is_excluded(relative_path: str) -> bool:
     """Ruta de terceros que no debe analizarse en absoluto."""
 
-    return bool(EXCLUDED_PATH_RE.search(relative_path))
+    if EXCLUDED_PATH_RE.search(relative_path):
+        return True
+
+    for extra in rutas_extra_ignoradas():
+        if relative_path == extra or relative_path.startswith(extra + "/"):
+            return True
+
+    return False
 
 
 def is_third_party(relative_path: str) -> bool:

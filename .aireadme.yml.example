@@ -1,0 +1,41 @@
+# Configuracion del generador de README.
+#
+# Todos los campos son opcionales. Este archivo es el unico canal por el
+# que le puedes decir algo al generador que no pueda deducir leyendo el
+# codigo.
+
+# Poner en false apaga la generacion en este repositorio.
+#
+# Aviso honesto: apaga la generacion, pero no es una salida de confianza.
+# El workflow se invoca desde .github/workflows/readme.yml antes de que
+# nadie lea este archivo. Para salirse del todo, quita ese stub.
+enabled: true
+
+# Idioma del README generado: es | en
+lang: es
+
+# Rutas que no aportan nada al analisis. Utiles cuando el repositorio
+# versiona codigo de terceros que el detector no reconoce como tal.
+ignore_paths: []
+
+# Testimonio humano. Esto es lo mas util que puedes escribir aqui.
+#
+# El analizador sabe que hace el codigo. No sabe PARA QUE existe, quien lo
+# usa ni por que se construyo. Eso solo lo sabes tu, y lo que escribas aca
+# se le entrega al modelo marcado como declaracion humana, con mas peso que
+# cualquier senal detectada.
+#
+# declared: |
+#   Sistema para el area de X. Lo usan N personas de Y.
+#   Reemplazo a una planilla que se mantenia a mano.
+
+# Propuestas de artefactos deterministas (.env.example, docs/API.md) en el
+# cuerpo del pull request. Desactivado por defecto.
+artifacts: false
+
+# Propuesta de limpieza en delete_files.md. Nunca borra nada.
+cleanup: true
+
+# Reconstruir insumos/ desde el codigo. Es un artefacto pesado que se
+# corrige a mano, asi que no se regenera en cada push.
+insumos: false
