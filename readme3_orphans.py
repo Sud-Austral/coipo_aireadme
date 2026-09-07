@@ -80,6 +80,16 @@ NUNCA_CANDIDATO = re.compile(
         | (^|/)spec/
         | (^|/)\.env
         | (^|/)CLAUDE\.md$
+        # Configuracion que su herramienta carga POR CONVENCION. Nadie la
+        # importa, y eso no la vuelve huerfana: medido, el detector
+        # proponia borrar vite.config.js de COIPO_PDF_EXCEL.
+        | (^|/)(vite|next|nuxt|astro|svelte|tailwind|postcss|webpack
+              |rollup|babel|jest|vitest|playwright|cypress|eslint
+              |prettier|commitlint|lint-staged|drizzle|knexfile
+              |metro|capacitor|ionic|craco|jsconfig|tsconfig)
+              [.\w-]*\.(js|cjs|mjs|ts|json|yaml|yml)$
+        | (^|/)(setup|conftest|manage|wsgi|asgi|gunicorn|celery)\.py$
+        | (^|/)(setup|tox|pytest|alembic|mypy|pyrightconfig)\.(cfg|ini|toml|json)$
     )""",
     re.IGNORECASE | re.VERBOSE,
 )

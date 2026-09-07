@@ -306,3 +306,34 @@ def test_una_respuesta_invalida_no_tumba_la_corrida():
     assert parsear_respuesta(
         '```json\n{"borrar": [], "revisar": []}\n```'
     ) == {"borrar": [], "revisar": []}
+
+
+def test_la_configuracion_por_convencion_esta_protegida():
+    """
+    Su herramienta la carga por convencion; nadie la importa. Eso no la
+    vuelve huerfana. Medido: el detector proponia borrar vite.config.js de
+    COIPO_PDF_EXCEL.
+    """
+
+    for ruta in [
+        "frontend/vite.config.js",
+        "tailwind.config.cjs",
+        "eslint.config.js",
+        "next.config.mjs",
+        "tsconfig.json",
+        "backend/conftest.py",
+        "manage.py",
+        "backend/wsgi.py",
+        "setup.cfg",
+        "pytest.ini",
+        "alembic.ini",
+    ]:
+        assert NUNCA_CANDIDATO.search(ruta), f"{ruta} deberia estar protegido"
+
+
+def test_el_codigo_normal_sigue_siendo_candidato():
+    """Proteger configuracion no puede significar proteger todo."""
+
+    assert not NUNCA_CANDIDATO.search("src/app.py")
+    assert not NUNCA_CANDIDATO.search("utils/viejo.py")
+    assert not NUNCA_CANDIDATO.search("web/src/componentes/Tabla.jsx")
