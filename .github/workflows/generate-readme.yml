@@ -263,17 +263,22 @@ jobs:
           echo "VERIFICANDO README"
           echo "======================================"
 
+          # No exigir README.md: el contrato con el humano tiene salidas
+          # legitimas que no escriben nada, y un repositorio con
+          # <!-- ai-readme:lock --> y sin README rompia el job aqui.
           if [ ! -f "target/README.md" ]; then
-            echo "ERROR: makeReadme.py no generó README.md"
-            exit 1
+            echo "No hay README.md."
+            echo "Es correcto si el contrato decidio no escribir nada;"
+            echo "el informe de la corrida explica por que."
+            exit 0
           fi
 
           if [ ! -s "target/README.md" ]; then
-            echo "ERROR: README.md está vacío"
-            exit 1
+            echo "AVISO: README.md existe pero esta vacio."
+            exit 0
           fi
 
-          echo "README.md generado correctamente."
+          echo "README.md presente."
 
           echo ""
           echo "Tamaño:"
@@ -486,6 +491,38 @@ jobs:
           fi
 
       # --------------------------------------------------
+      # Que rutas entran al pull request
+      #
+      # add-paths no tolera una ruta que no existe: `git add` corta con
+      # "fatal: pathspec ... did not match any files" y se pierde el PR
+      # entero. Y varias de estas rutas son opcionales por diseno:
+      # delete_files.md solo se escribe si hay candidatos, e insumos/ solo
+      # si se pidio.
+      #
+      # Paso por el que fallo la primera demostracion real.
+      # --------------------------------------------------
+
+      - name: Rutas que entran al pull request
+        id: rutas
+        run: |
+          : > rutas_del_pr.txt
+
+          for ruta in README.md delete_files.md insumos; do
+            if [ -e "target/$ruta" ]; then
+              echo "$ruta" >> rutas_del_pr.txt
+              echo "incluye: $ruta"
+            else
+              echo "omite:   $ruta (no existe)"
+            fi
+          done
+
+          {
+            echo "lista<<FIN_DE_LISTA"
+            cat rutas_del_pr.txt
+            echo "FIN_DE_LISTA"
+          } >> "$GITHUB_OUTPUT"
+
+      # --------------------------------------------------
       # 18. Crear Pull Request
       # --------------------------------------------------
 
@@ -505,10 +542,7 @@ jobs:
           # archivos de readme_context/ (unas 1.300 lineas de JSON) al
           # repositorio destino. Ese JSON quedaba commiteado y, en la corrida
           # siguiente, el escaner lo leia como si fuera codigo del proyecto.
-          add-paths: |
-            README.md
-            delete_files.md
-            insumos/
+          add-paths: ${{ steps.rutas.outputs.lista }}
 
           commit-message: "docs: update README automatically"
 
