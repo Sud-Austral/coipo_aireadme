@@ -1,0 +1,105 @@
+archivos:
+
+  - ruta: requirements.txt
+    sha256: "904333f343381c939afef9ebbf33c9a75ea31b595add8295b0c70bbede061ff8"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no aplica: son tres dependencias con version fija"
+    puede_versionarse: true
+    uso: "Declara todo lo que el sistema necesita para correr: cliente HTTP, lectura de configuracion y pruebas."
+
+  - ruta: api.json
+    sha256: "133f054d76f27ffa6d6387e88b04f9d2b26b4b39b52c43045a9f64fccd49d32e"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "[VERIFICAR] archivo de configuracion corto que el proceso de redaccion carga [makeReadme.py]. Los archivos que describen como llegar a un servicio externo son el sitio donde aparece una credencial por descuido. No se abrio para revisarlo"
+    puede_versionarse: "[VERIFICAR] queda en false si contiene_pii se confirma; en ese caso la ruta tiene que quedar ignorada con barra inicial y hoy no consta que lo este"
+    uso: "[INFERIDO] parametros de acceso al servicio de modelo de lenguaje que redacta; el proceso lo carga al arrancar [makeReadme.py]."
+
+  - ruta: .aireadme.yml.example
+    sha256: "a1bd657b120ab0c9ef8b42925df283ad662fd0cf38575c7e1116384625d9ff8f"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no se detectaron patrones de dato personal; es una plantilla"
+    puede_versionarse: true
+    uso: "Ejemplo de la configuracion opcional que un repositorio puede declarar sobre si mismo. Lo que declara se trata como testimonio y no como inferencia [readme_config.py]."
+
+  - ruta: fleet/catalogo.json
+    sha256: "fd56b999db300fce449aeba62de50a4c8c7b42a55054d7190a97e8ace6823420"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "[VERIFICAR] es el resultado del censo de la flota y ocupa cerca de 48 kB. Describe repositorios, incluidos los privados, que el inventario cuenta aparte [fleet_card.py]. No hay dato de persona esperable, pero si informacion sobre sistemas internos que quiza no deberia estar en un repositorio publico"
+    puede_versionarse: "[VERIFICAR] depende de si el repositorio es publico y de que se considere divulgable del inventario interno"
+    uso: "Inventario de la flota producido por el censo. Es dato derivado, no fuente."
+
+  - ruta: fleet/CATALOGO.md
+    sha256: "528c20a300649cb6785afa73882f56d142fa9397efee6e550dc1f8d4464567cc"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "[VERIFICAR] version legible del catalogo, con la misma consideracion que el anterior. El propio codigo tiene una verificacion de que no se filtre lo que no corresponde [fleet_card.py]"
+    puede_versionarse: "[VERIFICAR] misma consideracion que el catalogo en JSON"
+    uso: "Catalogo publicable de la flota."
+
+  - ruta: prompts/11-derivar-insumos-desde-codigo.md
+    sha256: "b89d9e4ea6e77b6b089a3d9f7802e08bdf47f0f26ac58a6615673f8bd1518de6"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no aplica: son instrucciones"
+    puede_versionarse: true
+    uso: "Instrucciones con las que se reconstruyen los insumos de un proyecto ya construido. Vive como documento y no como cadena en el codigo a proposito, para poder discutirse sin abrir codigo [insumos_inversos.py]."
+
+  - ruta: docs/OPERACION.md
+    sha256: "30577cf4190d1e5b3959730b4033944fea3a33d3be6d91a94525ecec9c12cea6"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "[VERIFICAR] documento de operacion; las guias de operacion suelen traer nombres de cuenta y direcciones de servidor"
+    puede_versionarse: true
+    uso: "Como se opera el sistema sobre la flota."
+
+  - ruta: README.md
+    sha256: "ebbe81fc4c1b774c5efd3e59c006700b106186ec5b08ec07c68464b97da21a19"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no se detectaron patrones de dato personal"
+    puede_versionarse: true
+    uso: "Documentacion de entrada del repositorio. Declara cifras sobre el estado de la flota que son autodeclaracion y estan [PENDIENTE] de confirmar."
+
+  - ruta: .github/workflows/generate-readme.yml
+    sha256: "2e509ebdd7dc6184ed3165e394b5efe49875f80d6fd93cb7b2715984527089c6"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "[VERIFICAR] es el flujo mas extenso del repositorio y el que orquesta la llamada al servicio externo; los flujos son donde se referencian los secretos"
+    puede_versionarse: true
+    uso: "Orquesta el analisis, la redaccion, la validacion y la propuesta de cambio."
+
+  - ruta: .github/workflows/readme.yml
+    sha256: "56e0392a6f5b503f5283064f4d6d9438ace6d24943f1007b47bca878ac508460"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no se detectaron patrones de dato personal"
+    puede_versionarse: true
+    uso: "Flujo corto que se instala en cada repositorio de la flota [propagar.py]."
+
+  - ruta: .github/workflows/fleet-census.yml
+    sha256: "489ae1af72fd091e13a651e006976ae03e1aa1e3e1590cd833a6e0f69e248496"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no se detectaron patrones de dato personal"
+    puede_versionarse: true
+    uso: "Ejecuta el censo de la flota y actualiza el catalogo."
+
+  - ruta: .github/workflows/fleet-sweep.yml
+    sha256: "a714624b754f40541f6238e75cba0958bf82b887750e774838abdde147c0bad2"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no se detectaron patrones de dato personal"
+    puede_versionarse: true
+    uso: "Recorre la flota y selecciona sobre que repositorios actuar."
+
+  - ruta: .github/workflows/ci.yml
+    sha256: "04da0ad00c3ce2167ffba5fdad89ff7159f09e8e6173baf65e162f1c05647b37"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no se detectaron patrones de dato personal"
+    puede_versionarse: true
+    uso: "Ejecuta las pruebas del propio repositorio."
+
+  - ruta: .gitattributes
+    sha256: "1a1dbe176bc233b499d35a57db7513f2941c99ab9759f177830c9149be99005b"
+    origen: "[PENDIENTE] quien lo entrego y cuando"
+    contiene_pii: "no aplica"
+    puede_versionarse: true
+    uso: "Normaliza el tratamiento de archivos. Importa mas de lo que parece: la huella de la evidencia esta definida para no moverse con el final de linea [tests/test_huella.py]."
+
+notas:
+  - "Ninguna entrada tiene resuelto el campo origen: en ningun repositorio esta escrito quien entrego un archivo ni cuando."
+  - "Los modulos de codigo y los archivos de prueba no se listan uno a uno: no son insumos ni datos, son el sistema."
+  - "Este repositorio no recibe datos de nadie. Lo que consume lo lee de otros repositorios en tiempo de ejecucion, y eso no queda versionado aqui salvo por el catalogo de la flota."
+  - "El unico hallazgo del manifiesto es api.json: un archivo de configuracion de acceso a un servicio externo versionado en un repositorio publico, sin que conste que este ignorado con ancla. Hay que abrirlo y decidir."
