@@ -171,7 +171,7 @@ def crear_prompt(
 # ============================================================
 
 CITA = re.compile(
-    r"\[(?P<archivo>[A-Za-z0-9_./\\-]+\.[A-Za-z0-9]{1,6})"
+    r"\[(?P<archivo>[A-Za-z0-9_./\\-]+\.[A-Za-z0-9]{1,8})"
     r"(?::(?P<linea>\d+))?\]"
 )
 
@@ -180,6 +180,25 @@ NO_ES_CITA = {
     "INFERIDO", "PENDIENTE", "VERIFICAR",
     "00-PROBLEMA.md", "01-SOLUCION.md", "MANIFIESTO.yaml",
 }
+
+
+def _normalizar_ruta(cita: str) -> str:
+    """
+    Deja la ruta como aparece en la evidencia.
+
+    Quita el prefijo "./" y las barras iniciales, pero NO el punto de un
+    archivo oculto. lstrip("./") lo hacia, porque trata la cadena como un
+    CONJUNTO de caracteres: convertia ".mcp.json" en "mcp.json", que no
+    existe, y la cita quedaba marcada como inventada. El coste de esa
+    confusion es alto: descarta los tres documentos de un repositorio.
+    """
+
+    ruta = cita.replace("\\", "/")
+
+    while ruta.startswith("./"):
+        ruta = ruta[2:]
+
+    return ruta.lstrip("/")
 
 
 def validar_citas(
@@ -223,7 +242,7 @@ def validar_citas(
             if archivo in NO_ES_CITA:
                 continue
 
-            normalizado = archivo.replace("\\", "/").lstrip("./")
+            normalizado = _normalizar_ruta(archivo)
 
             if (
                 normalizado in reales

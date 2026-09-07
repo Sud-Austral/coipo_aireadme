@@ -377,3 +377,47 @@ def test_el_informe_no_se_valida():
     }
 
     assert validar_citas(partes, EVIDENCIA_MINIMA)["total"] == 0
+
+
+def test_una_cita_a_archivo_oculto_no_es_inventada():
+    """
+    Un dotfile citado tal cual existe: `.mcp.json`, no `mcp.json`.
+
+    La normalizacion usaba lstrip("./"), que trata la cadena como un
+    conjunto de caracteres y se comia el punto inicial. Medido sobre
+    coipo_notebooklm: 1 de 73 citas quedaba marcada como inventada y eso
+    descartaba los tres documentos del repositorio entero.
+    """
+
+    evidencia = {
+        "files": [
+            {"path": ".mcp.json"},
+            {"path": ".env.example"},
+            {"path": "frontend/package.json"},
+        ]
+    }
+
+    partes = {
+        "01-SOLUCION.md": (
+            "Servidor de herramientas [.mcp.json]. "
+            "Variables en [.env.example:3]. "
+            "Dependencias en [./frontend/package.json:22]."
+        ),
+    }
+
+    resultado = validar_citas(partes, evidencia)
+
+    assert resultado["inventadas"] == []
+    assert resultado["total"] == 3
+
+
+def test_una_cita_inventada_sigue_detectandose():
+    """La correccion no puede ablandar el control que la justifica."""
+
+    evidencia = {"files": [{"path": "index.html"}]}
+
+    partes = {"01-SOLUCION.md": "Autenticacion en [auth.py:15]."}
+
+    resultado = validar_citas(partes, evidencia)
+
+    assert resultado["inventadas"] == ["auth.py"]
