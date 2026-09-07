@@ -31,6 +31,10 @@ IGNORED_DIRS = {
     # que contiene literalmente los nombres de todas las tecnologias— como si
     # fuera codigo del proyecto.
     "readme_context",
+    # Los insumos derivados son .md y .yaml: sin excluirlos, el analizador
+    # los leeria como codigo del proyecto en la corrida siguiente. Quinta
+    # vez que aparece esta clase de bug.
+    "insumos",
     ".git",
     ".svn",
     ".hg",
