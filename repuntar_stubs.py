@@ -49,6 +49,11 @@ STUB_PATH = ".github/workflows/readme.yml"
 
 CENTRAL_REPOSITORY = "Sud-Austral/coipo_aireadme"
 
+# Repositorios que empiezan con "coipo" pero no son proyectos que
+# documentar. coipo_index es el indice que produce el propio censo: darle
+# el generador seria pedirle que se documente a si mismo.
+NO_INSTRUMENTAR = {"coipo_index"}
+
 COMMIT_MESSAGE = (
     "ci: fijar el generador de README a una version publicada\n"
     "\n"
@@ -235,6 +240,8 @@ def main() -> int:
         r for r in repos
         if not r.archived and not r.disabled and not r.fork
     ]
+
+    repos = [r for r in repos if r.name not in NO_INSTRUMENTAR]
 
     if argumentos.repo:
         pedidos = {n.lower() for n in argumentos.repo}
